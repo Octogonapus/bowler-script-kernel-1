@@ -29,332 +29,361 @@ package com.neuronrobotics.bowlerstudio.av;
  * facility. Licensee represents and warrants that it will not use or
  * redistribute the Software for such purposes.
  * 
- * sample code found at http://stackoverflow.com/questions/2173374/converting-a-series-of-bufferedimages-to-a-video-in-java
+ * sample code found at http://stackoverflow
+ * .com/questions/2173374/converting-a-series-of-bufferedimages-to-a-video-in-java
  */
 
-import java.io.*;
-import java.util.*;
-
-import javax.imageio.ImageIO;
-import javax.media.*;
-import javax.media.control.*;
-import javax.media.protocol.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Vector;
+import javax.media.ConfigureCompleteEvent;
+import javax.media.ControllerEvent;
+import javax.media.ControllerListener;
+import javax.media.DataSink;
+import javax.media.EndOfMediaEvent;
+import javax.media.Format;
+import javax.media.Manager;
+import javax.media.MediaLocator;
+import javax.media.PrefetchCompleteEvent;
+import javax.media.Processor;
+import javax.media.RealizeCompleteEvent;
+import javax.media.ResourceUnavailableEvent;
+import javax.media.control.TrackControl;
+import javax.media.datasink.DataSinkErrorEvent;
+import javax.media.datasink.DataSinkEvent;
+import javax.media.datasink.DataSinkListener;
+import javax.media.datasink.EndOfStreamEvent;
+import javax.media.protocol.ContentDescriptor;
 import javax.media.protocol.DataSource;
-import javax.media.datasink.*;
+import javax.media.protocol.FileTypeDescriptor;
 
 /**
- * This program takes a list of JPEG image files and convert them into a
- * QuickTime movie.
+ * This program takes a list of JPEG image files and convert them into a QuickTime movie.
  */
 public class ImagesToVideo implements ControllerListener, DataSinkListener {
-	public boolean run(int width, int height, int frameRate, ArrayList<File> inFiles, File outputFile){
-		Vector<String> inputFiles = new Vector<String>();
-		for(File f:inFiles){
-			inputFiles.addElement(f.getAbsolutePath());
-		}
-		String outputURL = outputFile.getAbsolutePath();
-		if (!outputURL.endsWith(".mov") && !outputURL.endsWith(".MOV")) {
-			throw new RuntimeException("The output file extension should end with a .mov extension");
-		}
+  Object waitSync = new Object();
+  boolean stateTransitionOK = true;
+  Object waitFileSync = new Object();
+  boolean fileDone = false;
+  boolean fileSuccess = true;
 
-		MediaLocator oml=createMediaLocator(outputFile.getAbsolutePath());
-		return run(width, height, frameRate, inputFiles,oml );
-	}
-	public boolean run(int width, int height, int frameRate, Vector<String> inFiles, MediaLocator outML) {
-		ImageDataSource ids = new ImageDataSource(width, height, frameRate, inFiles);
+  public static void main(String args[]) {
 
-		Processor p;
+    if (args.length == 0) {
+      prUsage();
+    }
 
-		try {
-			System.err.println("- create processor for the image datasource ...");
-			p = Manager.createProcessor(ids);
-		} catch (Exception e) {
-			System.err.println("Yikes!  Cannot create a processor from the data source.");
-			return false;
-		}
+    // Parse the arguments.
+    int i = 0;
+    int width = -1, height = -1, frameRate = 1;
+    Vector<String> inputFiles = new Vector<String>();
+    String outputURL = null;
 
-		p.addControllerListener(this);
+    while (i < args.length) {
 
-		// Put the Processor into configured state so we can set
-		// some processing options on the processor.
-		p.configure();
-		if (!waitForState(p, p.Configured)) {
-			System.err.println("Failed to configure the processor.");
-			return false;
-		}
+      if (args[i].equals("-w")) {
+        i++;
+        if (i >= args.length) {
+          prUsage();
+        }
+        width = new Integer(args[i]).intValue();
+      } else if (args[i].equals("-h")) {
+        i++;
+        if (i >= args.length) {
+          prUsage();
+        }
+        height = new Integer(args[i]).intValue();
+      } else if (args[i].equals("-f")) {
+        i++;
+        if (i >= args.length) {
+          prUsage();
+        }
+        frameRate = new Integer(args[i]).intValue();
+      } else if (args[i].equals("-o")) {
+        i++;
+        if (i >= args.length) {
+          prUsage();
+        }
+        outputURL = args[i];
+      } else {
+        for (int j = 0; j < 120; j++) {
+          inputFiles.addElement(args[i]);
+        }
+      }
+      i++;
+    }
 
-		// Set the output content descriptor to QuickTime.
-		p.setContentDescriptor(new ContentDescriptor(FileTypeDescriptor.QUICKTIME));
+    if (outputURL == null || inputFiles.size() == 0) {
+      prUsage();
+    }
 
-		// Query for the processor for supported formats.
-		// Then set it on the processor.
-		TrackControl tcs[] = p.getTrackControls();
-		Format f[] = tcs[0].getSupportedFormats();
-		if (f == null || f.length <= 0) {
-			System.err.println("The mux does not support the input format: " + tcs[0].getFormat());
-			return false;
-		}
+    // Check for output file extension.
+    if (!outputURL.endsWith(".mov") && !outputURL.endsWith(".MOV")) {
+      System.err.println("The output file extension should end with a .mov extension");
+      prUsage();
+    }
 
-		tcs[0].setFormat(f[0]);
+    if (width < 0 || height < 0) {
+      System.err.println("Please specify the correct image size.");
+      prUsage();
+    }
 
-		System.err.println("Setting the track format to: " + f[0]);
+    // Check the frame rate.
+    if (frameRate < 1) {
+      frameRate = 1;
+    }
 
-		// We are done with programming the processor. Let's just
-		// realize it.
-		p.realize();
-		if (!waitForState(p, p.Realized)) {
-			System.err.println("Failed to realize the processor.");
-			return false;
-		}
+    // Generate the output media locators.
+    MediaLocator oml;
 
-		// Now, we'll need to create a DataSink.
-		DataSink dsink;
-		if ((dsink = createDataSink(p, outML)) == null) {
-			System.err.println("Failed to create a DataSink for the given output MediaLocator: " + outML);
-			return false;
-		}
+    if ((oml = createMediaLocator(outputURL)) == null) {
+      System.err.println("Cannot build media locator from: " + outputURL);
+      System.exit(0);
+    }
 
-		dsink.addDataSinkListener(this);
-		fileDone = false;
+    ImagesToVideo imageToMovie = new ImagesToVideo();
+    imageToMovie.run(width, height, frameRate, inputFiles, oml);
 
-		System.err.println("start processing...");
+    System.exit(0);
+  }
 
-		// OK, we can now start the actual transcoding.
-		try {
-			p.start();
-			dsink.start();
-		} catch (IOException e) {
-			System.err.println("IO error during processing");
-			return false;
-		}
+  static void prUsage() {
+    System.err.println(
+        "Usage: java JpegImagesToMovie -w <width> -h <height> -f <frame rate> -o <output URL> "
+            + "<input JPEG file 1> <input JPEG file 2> ...");
+    System.exit(-1);
+    //ImageIO.write(bi, "jpg", outputfile);
+  }
 
-		// Wait for EndOfStream event.
-		waitForFileDone();
+  /**
+   * Create a media locator from the given string.
+   */
+  @SuppressWarnings("unused")
+  static MediaLocator createMediaLocator(String url) {
 
-		// Cleanup.
-		try {
-			dsink.close();
-		} catch (Exception e) {
-		}
-		p.removeControllerListener(this);
+    MediaLocator ml;
 
-		System.err.println("...done processing.");
+    if (url.indexOf(":") > 0 && (ml = new MediaLocator(url)) != null) {
+      return ml;
+    }
 
-		return true;
-	}
+    if (url.startsWith(File.separator)) {
+      if ((ml = new MediaLocator("file:" + url)) != null) {
+        return ml;
+      }
+    } else {
+      String file = "file:" + System.getProperty("user.dir") + File.separator + url;
+      if ((ml = new MediaLocator(file)) != null) {
+        return ml;
+      }
+    }
 
-	/**
-	 * Create the DataSink.
-	 */
-	DataSink createDataSink(Processor p, MediaLocator outML) {
+    return null;
+  }
 
-		DataSource ds;
+  public boolean run(int width, int height, int frameRate, ArrayList<File> inFiles, File
+      outputFile) {
+    Vector<String> inputFiles = new Vector<String>();
+    for (File f : inFiles) {
+      inputFiles.addElement(f.getAbsolutePath());
+    }
+    String outputURL = outputFile.getAbsolutePath();
+    if (!outputURL.endsWith(".mov") && !outputURL.endsWith(".MOV")) {
+      throw new RuntimeException("The output file extension should end with a .mov extension");
+    }
 
-		if ((ds = p.getDataOutput()) == null) {
-			System.err.println("Something is really wrong: the processor does not have an output DataSource");
-			return null;
-		}
+    MediaLocator oml = createMediaLocator(outputFile.getAbsolutePath());
+    return run(width, height, frameRate, inputFiles, oml);
+  }
 
-		DataSink dsink;
+  public boolean run(int width, int height, int frameRate, Vector<String> inFiles, MediaLocator
+      outML) {
+    ImageDataSource ids = new ImageDataSource(width, height, frameRate, inFiles);
 
-		try {
-			System.err.println("- create DataSink for: " + outML);
-			dsink = Manager.createDataSink(ds, outML);
-			dsink.open();
-		} catch (Exception e) {
-			System.err.println("Cannot create the DataSink: " + e);
-			return null;
-		}
+    Processor p;
 
-		return dsink;
-	}
+    try {
+      System.err.println("- create processor for the image datasource ...");
+      p = Manager.createProcessor(ids);
+    } catch (Exception e) {
+      System.err.println("Yikes!  Cannot create a processor from the data source.");
+      return false;
+    }
 
-	Object waitSync = new Object();
-	boolean stateTransitionOK = true;
+    p.addControllerListener(this);
 
-	/**
-	 * Block until the processor has transitioned to the given state. Return
-	 * false if the transition failed.
-	 */
-	boolean waitForState(Processor p, int state) {
-		synchronized (waitSync) {
-			try {
-				while (p.getState() < state && stateTransitionOK)
-					waitSync.wait();
-			} catch (Exception e) {
-			}
-		}
-		return stateTransitionOK;
-	}
+    // Put the Processor into configured state so we can set
+    // some processing options on the processor.
+    p.configure();
+    if (!waitForState(p, p.Configured)) {
+      System.err.println("Failed to configure the processor.");
+      return false;
+    }
 
-	/**
-	 * Controller Listener.
-	 */
-	public void controllerUpdate(ControllerEvent evt) {
+    // Set the output content descriptor to QuickTime.
+    p.setContentDescriptor(new ContentDescriptor(FileTypeDescriptor.QUICKTIME));
 
-		if (evt instanceof ConfigureCompleteEvent || evt instanceof RealizeCompleteEvent
-				|| evt instanceof PrefetchCompleteEvent) {
-			synchronized (waitSync) {
-				stateTransitionOK = true;
-				waitSync.notifyAll();
-			}
-		} else if (evt instanceof ResourceUnavailableEvent) {
-			synchronized (waitSync) {
-				stateTransitionOK = false;
-				waitSync.notifyAll();
-			}
-		} else if (evt instanceof EndOfMediaEvent) {
-			evt.getSourceController().stop();
-			evt.getSourceController().close();
-		}
-	}
+    // Query for the processor for supported formats.
+    // Then set it on the processor.
+    TrackControl tcs[] = p.getTrackControls();
+    Format f[] = tcs[0].getSupportedFormats();
+    if (f == null || f.length <= 0) {
+      System.err.println("The mux does not support the input format: " + tcs[0].getFormat());
+      return false;
+    }
 
-	Object waitFileSync = new Object();
-	boolean fileDone = false;
-	boolean fileSuccess = true;
+    tcs[0].setFormat(f[0]);
 
-	/**
-	 * Block until file writing is done.
-	 */
-	boolean waitForFileDone() {
-		synchronized (waitFileSync) {
-			try {
-				while (!fileDone)
-					waitFileSync.wait();
-			} catch (Exception e) {
-			}
-		}
-		return fileSuccess;
-	}
+    System.err.println("Setting the track format to: " + f[0]);
 
-	/**
-	 * Event handler for the file writer.
-	 */
-	public void dataSinkUpdate(DataSinkEvent evt) {
+    // We are done with programming the processor. Let's just
+    // realize it.
+    p.realize();
+    if (!waitForState(p, p.Realized)) {
+      System.err.println("Failed to realize the processor.");
+      return false;
+    }
 
-		if (evt instanceof EndOfStreamEvent) {
-			synchronized (waitFileSync) {
-				fileDone = true;
-				waitFileSync.notifyAll();
-			}
-		} else if (evt instanceof DataSinkErrorEvent) {
-			synchronized (waitFileSync) {
-				fileDone = true;
-				fileSuccess = false;
-				waitFileSync.notifyAll();
-			}
-		}
-	}
+    // Now, we'll need to create a DataSink.
+    DataSink dsink;
+    if ((dsink = createDataSink(p, outML)) == null) {
+      System.err.println("Failed to create a DataSink for the given output MediaLocator: " + outML);
+      return false;
+    }
 
-	public static void main(String args[]) {
+    dsink.addDataSinkListener(this);
+    fileDone = false;
 
-		if (args.length == 0)
-			prUsage();
+    System.err.println("start processing...");
 
-		// Parse the arguments.
-		int i = 0;
-		int width = -1, height = -1, frameRate = 1;
-		Vector<String> inputFiles = new Vector<String>();
-		String outputURL = null;
+    // OK, we can now start the actual transcoding.
+    try {
+      p.start();
+      dsink.start();
+    } catch (IOException e) {
+      System.err.println("IO error during processing");
+      return false;
+    }
 
-		while (i < args.length) {
+    // Wait for EndOfStream event.
+    waitForFileDone();
 
-			if (args[i].equals("-w")) {
-				i++;
-				if (i >= args.length)
-					prUsage();
-				width = new Integer(args[i]).intValue();
-			} else if (args[i].equals("-h")) {
-				i++;
-				if (i >= args.length)
-					prUsage();
-				height = new Integer(args[i]).intValue();
-			} else if (args[i].equals("-f")) {
-				i++;
-				if (i >= args.length)
-					prUsage();
-				frameRate = new Integer(args[i]).intValue();
-			} else if (args[i].equals("-o")) {
-				i++;
-				if (i >= args.length)
-					prUsage();
-				outputURL = args[i];
-			} else {
-				for (int j = 0; j < 120; j++) {
-					inputFiles.addElement(args[i]);
-				}
-			}
-			i++;
-		}
+    // Cleanup.
+    try {
+      dsink.close();
+    } catch (Exception e) {
+    }
+    p.removeControllerListener(this);
 
-		if (outputURL == null || inputFiles.size() == 0)
-			prUsage();
+    System.err.println("...done processing.");
 
-		// Check for output file extension.
-		if (!outputURL.endsWith(".mov") && !outputURL.endsWith(".MOV")) {
-			System.err.println("The output file extension should end with a .mov extension");
-			prUsage();
-		}
+    return true;
+  }
 
-		if (width < 0 || height < 0) {
-			System.err.println("Please specify the correct image size.");
-			prUsage();
-		}
+  /**
+   * Create the DataSink.
+   */
+  DataSink createDataSink(Processor p, MediaLocator outML) {
 
-		// Check the frame rate.
-		if (frameRate < 1)
-			frameRate = 1;
+    DataSource ds;
 
-		// Generate the output media locators.
-		MediaLocator oml;
+    if ((ds = p.getDataOutput()) == null) {
+      System.err.println("Something is really wrong: the processor does not have an output "
+          + "DataSource");
+      return null;
+    }
 
-		if ((oml = createMediaLocator(outputURL)) == null) {
-			System.err.println("Cannot build media locator from: " + outputURL);
-			System.exit(0);
-		}
+    DataSink dsink;
 
-		ImagesToVideo imageToMovie = new ImagesToVideo();
-		imageToMovie.run(width, height, frameRate, inputFiles, oml);
+    try {
+      System.err.println("- create DataSink for: " + outML);
+      dsink = Manager.createDataSink(ds, outML);
+      dsink.open();
+    } catch (Exception e) {
+      System.err.println("Cannot create the DataSink: " + e);
+      return null;
+    }
 
-		System.exit(0);
-	}
+    return dsink;
+  }
 
-	static void prUsage() {
-		System.err.println(
-				"Usage: java JpegImagesToMovie -w <width> -h <height> -f <frame rate> -o <output URL> <input JPEG file 1> <input JPEG file 2> ...");
-		System.exit(-1);
-		//ImageIO.write(bi, "jpg", outputfile);
-	}
+  /**
+   * Block until the processor has transitioned to the given state. Return false if the transition
+   * failed.
+   */
+  boolean waitForState(Processor p, int state) {
+    synchronized (waitSync) {
+      try {
+        while (p.getState() < state && stateTransitionOK) {
+          waitSync.wait();
+        }
+      } catch (Exception e) {
+      }
+    }
+    return stateTransitionOK;
+  }
 
-	/**
-	 * Create a media locator from the given string.
-	 */
-	@SuppressWarnings("unused")
-	static MediaLocator createMediaLocator(String url) {
+  /**
+   * Controller Listener.
+   */
+  public void controllerUpdate(ControllerEvent evt) {
 
-		MediaLocator ml;
+    if (evt instanceof ConfigureCompleteEvent || evt instanceof RealizeCompleteEvent
+        || evt instanceof PrefetchCompleteEvent) {
+      synchronized (waitSync) {
+        stateTransitionOK = true;
+        waitSync.notifyAll();
+      }
+    } else if (evt instanceof ResourceUnavailableEvent) {
+      synchronized (waitSync) {
+        stateTransitionOK = false;
+        waitSync.notifyAll();
+      }
+    } else if (evt instanceof EndOfMediaEvent) {
+      evt.getSourceController().stop();
+      evt.getSourceController().close();
+    }
+  }
 
-		if (url.indexOf(":") > 0 && (ml = new MediaLocator(url)) != null)
-			return ml;
+  /**
+   * Block until file writing is done.
+   */
+  boolean waitForFileDone() {
+    synchronized (waitFileSync) {
+      try {
+        while (!fileDone) {
+          waitFileSync.wait();
+        }
+      } catch (Exception e) {
+      }
+    }
+    return fileSuccess;
+  }
 
-		if (url.startsWith(File.separator)) {
-			if ((ml = new MediaLocator("file:" + url)) != null)
-				return ml;
-		} else {
-			String file = "file:" + System.getProperty("user.dir") + File.separator + url;
-			if ((ml = new MediaLocator(file)) != null)
-				return ml;
-		}
+  /**
+   * Event handler for the file writer.
+   */
+  public void dataSinkUpdate(DataSinkEvent evt) {
 
-		return null;
-	}
+    if (evt instanceof EndOfStreamEvent) {
+      synchronized (waitFileSync) {
+        fileDone = true;
+        waitFileSync.notifyAll();
+      }
+    } else if (evt instanceof DataSinkErrorEvent) {
+      synchronized (waitFileSync) {
+        fileDone = true;
+        fileSuccess = false;
+        waitFileSync.notifyAll();
+      }
+    }
+  }
 
-	///////////////////////////////////////////////
-	//
-	// Inner classes.
-	///////////////////////////////////////////////
-
-
+  ///////////////////////////////////////////////
+  //
+  // Inner classes.
+  ///////////////////////////////////////////////
 
 
 }
