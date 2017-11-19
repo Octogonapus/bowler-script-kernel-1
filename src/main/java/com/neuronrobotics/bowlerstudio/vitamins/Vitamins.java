@@ -1,8 +1,10 @@
 package com.neuronrobotics.bowlerstudio.vitamins;
 
+import com.google.common.base.Throwables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
 import com.neuronrobotics.sdk.common.Log;
 import eu.mihosoft.vrl.v3d.CSG;
@@ -18,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.github.GHMyself;
@@ -205,20 +208,20 @@ public class Vitamins {
       InputStream inPut = null;
 
       // attempt to load the JSON file from the GIt Repo and pars the JSON string
-      File f;
+      File file;
       try {
-        f = ScriptingEngine
-            .fileFromGit(
-                getGitRepoDatabase(),// git repo, change this if you fork this demo
-                getRootFolder() + type + ".json"// File from within the Git repo
-            );
-        inPut = FileUtils.openInputStream(f);
+        file = ScriptingEngine.fileFromGit(
+            getGitRepoDatabase(),// git repo, change this if you fork this demo
+            getRootFolder() + type + ".json"// File from within the Git repo
+        );
 
+        inPut = FileUtils.openInputStream(file);
         jsonString = IOUtils.toString(inPut);
 
         // perform the GSON parse
-        HashMap<String, HashMap<String, Object>> database
-            = gson.fromJson(jsonString, TT_mapStringString);
+        HashMap<String, HashMap<String, Object>> database =
+            gson.fromJson(jsonString, TT_mapStringString);
+
         if (database == null) {
           throw new RuntimeException("create a new one");
         }
@@ -238,7 +241,8 @@ public class Vitamins {
         }
 
       } catch (Exception e) {
-        e.printStackTrace();
+        LoggerUtilities.getLogger().log(Level.WARNING,
+            "Exception in getDatabase.\n" + Throwables.getStackTraceAsString(e));
         databaseSet.put(type, new HashMap<>());
       }
     }

@@ -145,7 +145,8 @@ public class ColorDetector implements IObjectDetector {
     }
 
 
-    AbstractImageProvider.deepCopy(OpenCVImageConversionFactory.matToBufferedImage(displayImage), disp);
+    AbstractImageProvider.deepCopy(OpenCVImageConversionFactory.matToBufferedImage(displayImage),
+        disp);
     return myArray;
   }
 }

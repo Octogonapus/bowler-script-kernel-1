@@ -204,7 +204,9 @@ public class PhysicsCore {
     Platform.runLater(() -> {
       for (IPhysicsManager physics : getPhysicsObjects()) {
         try {
-          TransformFactory.bulletToAffine(physics.getRigidBodyLocation(), physics.getUpdateTransform());
+          TransformFactory.bulletToAffine(
+              physics.getRigidBodyLocation(),
+              physics.getUpdateTransform());
         } catch (Exception e) {
           LoggerUtilities.getLogger().log(Level.WARNING,
               "Exception when transforming bullet to affine.\n"

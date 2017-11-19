@@ -71,22 +71,26 @@ public class PurchasingData {
 
   @Override
   public String toString() {
-    StringBuilder s = new StringBuilder("\n");
-    s.append("urlAPI ").append(urlAPI).append("\n");
-    s.append("db ").append(db).append("\n");
-    s.append("serverType ").append(serverType).append("\n");
-    s.append("cartURL ").append(cartURL).append("\n");
+    StringBuilder builder = new StringBuilder("\n");
+    builder.append("urlAPI ").append(urlAPI).append("\n");
+    builder.append("db ").append(db).append("\n");
+    builder.append("serverType ").append(serverType).append("\n");
+    builder.append("cartURL ").append(cartURL).append("\n");
 
     for (String key : variantParameters.keySet()) {
-      s.append("variable ").append(key).append(" to ").append(variantParameters.get(key)).append
-          ("\n");
+      builder
+          .append("variable ")
+          .append(key)
+          .append(" to ")
+          .append(variantParameters.get(key))
+          .append("\n");
     }
 
     for (Integer key : pricsUSD.keySet()) {
-      s.append("Price at ").append(key).append(" = ").append(pricsUSD.get(key)).append("\n");
+      builder.append("Price at ").append(key).append(" = ").append(pricsUSD.get(key)).append("\n");
     }
 
-    return s.toString();
+    return builder.toString();
   }
 
 }

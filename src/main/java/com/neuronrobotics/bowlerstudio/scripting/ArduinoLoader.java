@@ -79,17 +79,22 @@ public class ArduinoLoader implements IScriptingLanguage {
     ARDUINO = arduino;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
+  public Object inlineScriptRun(String code, ArrayList<Object> args) throws Exception {
+    return null;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
   public Object inlineScriptRun(File code, ArrayList<Object> args) throws Exception {
     if (args == null) {
       args = new ArrayList<>();
     }
 
     if (database == null) {
-      database = (HashMap<String, HashMap<String, Object>>) ScriptingEngine
-          .gitScriptRun("https://github.com/madhephaestus/Arduino-Boards-JSON.git",
-              "boards.json", null);
+      database = (HashMap<String, HashMap<String, Object>>) ScriptingEngine.gitScriptRun(
+          "https://github.com/madhephaestus/Arduino-Boards-JSON.git",
+          "boards.json", null);
     }
 
     String execString = getARDUINOExec();
@@ -144,11 +149,6 @@ public class ArduinoLoader implements IScriptingLanguage {
       }
     }
 
-    return null;
-  }
-
-  @Override
-  public Object inlineScriptRun(String code, ArrayList<Object> args) throws Exception {
     return null;
   }
 

@@ -27,8 +27,7 @@ public class Purchasing {
   private static String gitRpoDatabase = defaultgitRpoDatabase;
   //Create the type, this tells GSON what datatypes to instantiate when parsing and saving the json
   private static Type TT_mapStringString
-      = new TypeToken<HashMap<String, HashMap<String, PurchasingData>>>() {
-  }.getType();
+      = new TypeToken<HashMap<String, HashMap<String, PurchasingData>>>() {}.getType();
   //chreat the gson object, this is the parsing factory
   private static Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
@@ -104,13 +103,13 @@ public class Purchasing {
       InputStream inPut;
 
       // attempt to load the JSON file from the GIt Repo and pars the JSON string
-      File f;
+      File file;
       try {
-        f = ScriptingEngine.fileFromGit(
+        file = ScriptingEngine.fileFromGit(
                 getGitRpoDatabase(),// git repo, change this if you fork this demo
                 getRootFolder() + type + ".json"// File from within the Git repo
             );
-        inPut = FileUtils.openInputStream(f);
+        inPut = FileUtils.openInputStream(file);
 
         jsonString = IOUtils.toString(inPut);
         // perform the GSON parse
@@ -181,14 +180,14 @@ public class Purchasing {
       if (!variant.endsWith("variant-1")) {
         // exclude the stub generated purchasing data
         try {
-          URL u = new URL(pd.getAPIUrl());
-          HttpURLConnection huc = (HttpURLConnection) u.openConnection();
+          URL url = new URL(pd.getAPIUrl());
+          HttpURLConnection huc = (HttpURLConnection) url.openConnection();
           huc.setRequestMethod("GET");  //OR  huc.setRequestMethod ("HEAD");
           huc.connect();
           huc.getResponseCode();
           huc.disconnect();
-          u = new URL(pd.getCartUrl());
-          huc = (HttpURLConnection) u.openConnection();
+          url = new URL(pd.getCartUrl());
+          huc = (HttpURLConnection) url.openConnection();
           huc.setRequestMethod("GET");  //OR  huc.setRequestMethod ("HEAD");
           huc.connect();
           huc.getResponseCode();

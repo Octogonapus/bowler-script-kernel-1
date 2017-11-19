@@ -53,7 +53,7 @@ public class SalientDetector implements IObjectDetector {
   Scalar YellowBox = new Scalar(255, 255, 0);
 
   Mat ComparTo = new Mat();
-      // STAGE 3 USE ONLY, check frames after this Mat is set to see how different it is.
+  // STAGE 3 USE ONLY, check frames after this Mat is set to see how different it is.
   double CompareTo_Area = 0;
   Boolean prev = false;
 
@@ -518,8 +518,10 @@ public class SalientDetector implements IObjectDetector {
                           smallbox = true;
                         }
 
-                        Core.rectangle(ObjFound, STAGE1_BOXES.get(a1).tl(), STAGE1_BOXES.get(a1).br(), YellowBox, 2, 8, 0);
-                        AbstractImageProvider.deepCopy(OpenCVImageConversionFactory.matToBufferedImage(ObjFound), disp);
+                        Core.rectangle(ObjFound, STAGE1_BOXES.get(a1).tl(), STAGE1_BOXES.get(a1)
+                            .br(), YellowBox, 2, 8, 0);
+                        AbstractImageProvider.deepCopy(OpenCVImageConversionFactory
+                            .matToBufferedImage(ObjFound), disp);
 
                         double m = (double) returnArea_X;
                         double n = (double) returnArea_Y;

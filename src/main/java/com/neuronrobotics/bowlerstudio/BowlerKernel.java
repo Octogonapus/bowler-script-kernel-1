@@ -192,9 +192,9 @@ public class BowlerKernel {
 
         if (line.equalsIgnoreCase("history")
             || line.equalsIgnoreCase("h")) {
-          List<String> h = reader.getHistory().getHistoryList();
-          for (String s : h) {
-            System.out.println(s);
+          List<String> historyList = reader.getHistory().getHistoryList();
+          for (String string : historyList) {
+            LoggerUtilities.getLogger().log(Level.INFO, string);
           }
           continue;
         }

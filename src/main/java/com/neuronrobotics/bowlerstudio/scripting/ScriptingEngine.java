@@ -362,11 +362,11 @@ public class ScriptingEngine {
     Elements links = doc.select("script");
 
     for (Element e : links) {
-      Attributes n = e.attributes();
-      String jSSource = n.get("src");
+      Attributes attributes = e.attributes();
+      String source = attributes.get("src");
 
-      if (jSSource.contains("https://gist.github.com/")) {
-        String js = jSSource.split(".js")[0];
+      if (source.contains("https://gist.github.com/")) {
+        String js = source.split(".js")[0];
         String[] id = js.split("/");
         ret.add(id[id.length - 1]);
       }
@@ -384,10 +384,10 @@ public class ScriptingEngine {
 
         String html;
         TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer t = tf.newTransformer();
+        Transformer transformer = tf.newTransformer();
         StringWriter sw = new StringWriter();
 
-        t.transform(new DOMSource(engine.getDocument()), new StreamResult(sw));
+        transformer.transform(new DOMSource(engine.getDocument()), new StreamResult(sw));
         html = sw.getBuffer().toString();
 
         return returnFirstGist(html);
@@ -522,8 +522,8 @@ public class ScriptingEngine {
 
   private static void loadFilesToList(ArrayList<String> files, File directory, String extension) {
     for (final File fileEntry : directory.listFiles()) {
-      if (fileEntry.getName().endsWith(".git") ||
-          fileEntry.getName().startsWith(".git")) {
+      if (fileEntry.getName().endsWith(".git")
+          || fileEntry.getName().startsWith(".git")) {
         continue;// ignore git files
       }
 
@@ -582,34 +582,9 @@ public class ScriptingEngine {
     return fileFromGit(git, fileName);
   }
 
-  public static void pushCodeToGit(String id,
-                                   String branch,
-                                   String FileName,
-                                   String content,
-                                   String commitMessage) throws Exception {
-    if (loginID == null) {
-      login();
-    }
-
-    if (loginID == null) {
-      return;// No login info means there is no way to publish
-    }
-
-    File gistDir = cloneRepo(id, branch);
-    File desired = new File(gistDir.getAbsoluteFile() + "/" + FileName);
-
-    boolean flagNewFile = false;
-    if (!desired.exists()) {
-      desired.createNewFile();
-      flagNewFile = true;
-    }
-
-    pushCodeToGit(id, branch, FileName, content, commitMessage, flagNewFile);
-  }
-
   public static void commit(String id,
                             String branch,
-                            String FileName,
+                            String fileName,
                             String content,
                             String commitMessage,
                             boolean flagNewFile) throws Exception {
@@ -622,7 +597,7 @@ public class ScriptingEngine {
     }
 
     File gistDir = cloneRepo(id, branch);
-    File desired = new File(gistDir.getAbsoluteFile() + "/" + FileName);
+    File desired = new File(gistDir.getAbsoluteFile() + "/" + fileName);
 
     String localPath = gistDir.getAbsolutePath();
     File gitRepoFile = new File(localPath + "/.git");
@@ -631,7 +606,7 @@ public class ScriptingEngine {
     Git git = new Git(localRepo);
     try {                                                // latest version
       if (flagNewFile) {
-        git.add().addFilepattern(FileName).call();
+        git.add().addFilepattern(fileName).call();
       }
       if (content != null) {
         OutputStream out = null;
@@ -655,17 +630,17 @@ public class ScriptingEngine {
       if (!desired.getName().contentEquals("csgDatabase.json")) {
         String[] gitID = ScriptingEngine.findGitTagFromFile(desired);
         String remoteURI = gitID[0];
-        ArrayList<String> f = ScriptingEngine.filesInGit(remoteURI);
-        for (String s : f) {
-          if (s.contentEquals("csgDatabase.json")) {
+        ArrayList<String> files = ScriptingEngine.filesInGit(remoteURI);
+        for (String file : files) {
+          if (file.contentEquals("csgDatabase.json")) {
 
-            File dbFile = ScriptingEngine.fileFromGit(gitID[0], s);
+            File dbFile = ScriptingEngine.fileFromGit(gitID[0], file);
             if (!CSGDatabase.getDbFile().equals(dbFile)) {
               CSGDatabase.setDbFile(dbFile);
             }
             CSGDatabase.saveDatabase();
             String next = new Scanner(dbFile).useDelimiter("\\Z").next();
-            ScriptingEngine.commit(remoteURI, branch, s, next, "saving CSG database", false);
+            ScriptingEngine.commit(remoteURI, branch, file, next, "saving CSG database", false);
           }
         }
       }
@@ -674,6 +649,31 @@ public class ScriptingEngine {
       LoggerUtilities.getLogger().log(Level.WARNING,
           "Exception in commit.\n" + Throwables.getStackTraceAsString(e));
     }
+  }
+
+  public static void pushCodeToGit(String id,
+                                   String branch,
+                                   String fileName,
+                                   String content,
+                                   String commitMessage) throws Exception {
+    if (loginID == null) {
+      login();
+    }
+
+    if (loginID == null) {
+      return;// No login info means there is no way to publish
+    }
+
+    File gistDir = cloneRepo(id, branch);
+    File desired = new File(gistDir.getAbsoluteFile() + "/" + fileName);
+
+    boolean flagNewFile = false;
+    if (!desired.exists()) {
+      desired.createNewFile();
+      flagNewFile = true;
+    }
+
+    pushCodeToGit(id, branch, fileName, content, commitMessage, flagNewFile);
   }
 
   public static void pushCodeToGit(String id, String branch, String FileName, String content,
@@ -740,21 +740,21 @@ public class ScriptingEngine {
     }
   }
 
-  public static String[] codeFromGit(String id, String FileName) throws Exception {
-    File targetFile = fileFromGit(id, FileName);
+  public static String[] codeFromGit(String id, String fileName) throws Exception {
+    File targetFile = fileFromGit(id, fileName);
 
     if (targetFile.exists()) {
       String text = new String(Files.readAllBytes(Paths.get(targetFile.getAbsolutePath())),
           StandardCharsets.UTF_8);
-      return new String[]{text, FileName, targetFile.getAbsolutePath()};
+      return new String[]{text, fileName, targetFile.getAbsolutePath()};
     }
 
     return null;
   }
 
-  private static String[] codeFromGistID(String id, String FileName) throws Exception {
+  private static String[] codeFromGistID(String id, String fileName) throws Exception {
     String giturl = "https://gist.github.com/" + id + ".git";
-    File targetFile = fileFromGit(giturl, FileName);
+    File targetFile = fileFromGit(giturl, fileName);
 
     if (targetFile.exists()) {
       LoggerUtilities.getLogger().log(Level.INFO,
@@ -762,27 +762,27 @@ public class ScriptingEngine {
       // Target file is ready to go
       String text = new String(Files.readAllBytes(Paths.get(targetFile.getAbsolutePath())),
           StandardCharsets.UTF_8);
-      return new String[]{text, FileName, targetFile.getAbsolutePath()};
+      return new String[]{text, fileName, targetFile.getAbsolutePath()};
     }
 
     return null;
   }
 
-  public static Object inlineFileScriptRun(File f, ArrayList<Object> args) throws Exception {
-    return inlineScriptRun(f, args, getShellType(f.getName()));
+  public static Object inlineFileScriptRun(File file, ArrayList<Object> args) throws Exception {
+    return inlineScriptRun(file, args, getShellType(file.getName()));
   }
 
   public static Object inlineGistScriptRun(String gistID,
-                                           String Filename,
+                                           String filename,
                                            ArrayList<Object> args) throws Exception {
-    String[] gistData = codeFromGistID(gistID, Filename);
+    String[] gistData = codeFromGistID(gistID, filename);
     return inlineScriptRun(new File(gistData[2]), args, getShellType(gistData[1]));
   }
 
   public static Object gitScriptRun(String gitURL,
-                                    String Filename,
+                                    String fileName,
                                     ArrayList<Object> args) throws Exception {
-    String[] gistData = codeFromGit(gitURL, Filename);
+    String[] gistData = codeFromGit(gitURL, fileName);
     return inlineScriptRun(new File(gistData[2]), args, getShellType(gistData[1]));
   }
 
@@ -818,7 +818,7 @@ public class ScriptingEngine {
           Git git = new Git(localRepo);
 
           try {
-            PullResult ret = git.pull().setCredentialsProvider(cp).call();
+            PullResult ret = git.pull().setCredentialsProvider(cp).call(); //TODO: Not used?
             git.close();
           } catch (Exception e) {
             try {

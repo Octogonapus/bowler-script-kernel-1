@@ -11,7 +11,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class CHDKImageProvider extends AbstractImageProvider {
-  ICamera cam;
+  private ICamera cam;
 
   public CHDKImageProvider() throws PTPTimeoutException, GenericCameraException {
     cam = CameraFactory.getCamera(SupportedCamera.SX160IS);
