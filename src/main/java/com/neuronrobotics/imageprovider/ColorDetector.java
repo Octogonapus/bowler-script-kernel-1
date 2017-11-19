@@ -16,7 +16,7 @@ import org.opencv.imgproc.Imgproc;
 //http://cell0907.blogspot.com/2013/07/tracking-ball-with-javaopencv.html
 
 public class ColorDetector implements IObjectDetector {
-  private Mat hsv_image = new Mat();
+  private Mat hsvImage = new Mat();
   private Mat thresholded = new Mat();
   private Mat thresholded2 = new Mat();
 
@@ -65,9 +65,9 @@ public class ColorDetector implements IObjectDetector {
     OpenCVImageConversionFactory.bufferedImageToMat(in, inputImage);
     Mat displayImage = new Mat();
     // One way to select a range of colors by Hue
-    Imgproc.cvtColor(inputImage, hsv_image, Imgproc.COLOR_BGR2HSV);
-    Core.inRange(hsv_image, hsv_min, hsv_max, thresholded);
-    Core.inRange(hsv_image, hsv_min2, hsv_max2, thresholded2);
+    Imgproc.cvtColor(inputImage, hsvImage, Imgproc.COLOR_BGR2HSV);
+    Core.inRange(hsvImage, hsv_min, hsv_max, thresholded);
+    Core.inRange(hsvImage, hsv_min2, hsv_max2, thresholded2);
     Core.bitwise_or(thresholded, thresholded2, thresholded);
     // Notice that the thresholds don't really work as a "distance"
     // Ideally we would like to cut the image by hue and then pick just
@@ -77,7 +77,7 @@ public class ColorDetector implements IObjectDetector {
     // But if we want to be "faster" we can do just (255-S)+(255-V)>Range
     // Or otherwise 510-S-V>Range
     // Anyhow, we do the following... Will see how fast it goes...
-    Core.split(hsv_image, lhsv); // We get 3 2D one channel Mats
+    Core.split(hsvImage, lhsv); // We get 3 2D one channel Mats
     Mat S = lhsv.get(1);
     Mat V = lhsv.get(2);
     Core.subtract(array255, S, S);

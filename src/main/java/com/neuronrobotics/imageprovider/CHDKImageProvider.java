@@ -7,8 +7,11 @@ import chdk.ptp.java.exception.CameraConnectionException;
 import chdk.ptp.java.exception.GenericCameraException;
 import chdk.ptp.java.exception.PTPTimeoutException;
 import chdk.ptp.java.model.CameraMode;
+import com.google.common.base.Throwables;
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 public class CHDKImageProvider extends AbstractImageProvider {
   private ICamera cam;
@@ -29,7 +32,8 @@ public class CHDKImageProvider extends AbstractImageProvider {
         AbstractImageProvider.deepCopy(captureNewImage(), imageData);
         return true;
       } catch (RuntimeException e) {
-        e.printStackTrace();
+        LoggerUtilities.getLogger().log(Level.WARNING,
+            "Exception while disconnecting.\n" + Throwables.getStackTraceAsString(e));
 
         failure++;
       }
@@ -43,26 +47,23 @@ public class CHDKImageProvider extends AbstractImageProvider {
     try {
       cam.disconnect();
     } catch (CameraConnectionException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Exception while disconnecting.\n" + Throwables.getStackTraceAsString(e));
     }
   }
 
   @Override
   public boolean connectDeviceImp() {
-    // TODO Auto-generated method stub
     return false;
   }
 
   @Override
   public ArrayList<String> getNamespacesImp() {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   public BufferedImage captureNewImage() {
-    // TODO Auto-generated method stub
     try {
       return cam.getPicture();
     } catch (Exception e) {
