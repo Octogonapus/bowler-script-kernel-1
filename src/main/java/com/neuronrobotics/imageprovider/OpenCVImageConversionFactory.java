@@ -26,11 +26,11 @@ public class OpenCVImageConversionFactory {
       case 3:
         type = BufferedImage.TYPE_3BYTE_BGR;
         // bgr to rgb
-        byte b;
+        byte channelByte;
         for (int i = 0; i < data.length; i = i + 3) {
-          b = data[i];
+          channelByte = data[i];
           data[i] = data[i + 2];
-          data[i + 2] = b;
+          data[i + 2] = channelByte;
         }
         break;
       default:
@@ -43,8 +43,8 @@ public class OpenCVImageConversionFactory {
 
 
   public static void deepCopy(org.opencv.core.Mat src, BufferedImage dest) {
-    Graphics g = dest.createGraphics();
-    g.drawImage(matToBufferedImage(src), 0, 0, null);
+    Graphics graphics = dest.createGraphics();
+    graphics.drawImage(matToBufferedImage(src), 0, 0, null);
   }
 
   /**

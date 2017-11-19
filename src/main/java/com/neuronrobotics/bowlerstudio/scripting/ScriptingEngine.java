@@ -676,10 +676,13 @@ public class ScriptingEngine {
     pushCodeToGit(id, branch, fileName, content, commitMessage, flagNewFile);
   }
 
-  public static void pushCodeToGit(String id, String branch, String FileName, String content,
+  public static void pushCodeToGit(String id,
+                                   String branch,
+                                   String fileName,
+                                   String content,
                                    String commitMessage,
                                    boolean flagNewFile) throws Exception {
-    commit(id, branch, FileName, content, commitMessage, flagNewFile);
+    commit(id, branch, fileName, content, commitMessage, flagNewFile);
     if (loginID == null) {
       login();
     }
@@ -689,7 +692,7 @@ public class ScriptingEngine {
     }
 
     File gistDir = cloneRepo(id, branch);
-    File desired = new File(gistDir.getAbsoluteFile() + "/" + FileName);
+    File desired = new File(gistDir.getAbsoluteFile() + "/" + fileName);
 
     if (!hasnetwork && content != null) {
       overwriteFileWithString(desired, content);
@@ -706,7 +709,7 @@ public class ScriptingEngine {
       git.pull().setCredentialsProvider(cp).call();
 
       if (flagNewFile) {
-        git.add().addFilepattern(FileName).call();
+        git.add().addFilepattern(fileName).call();
       }
 
       overwriteFileWithString(desired, content);

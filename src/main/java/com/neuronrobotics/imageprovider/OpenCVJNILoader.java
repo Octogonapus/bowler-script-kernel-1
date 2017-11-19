@@ -1,17 +1,21 @@
 package com.neuronrobotics.imageprovider;
 
+import com.google.common.base.Throwables;
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import java.io.File;
+import java.util.logging.Level;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 public class OpenCVJNILoader {
-  static NativeResource resource = null;
+  private static NativeResource resource = null;
 
   public static void load() {
     if (resource != null) {
       return;
     }
+
     resource = new NativeResource();
     //+Core.NATIVE_LIBRARY_NAME+".so"
     //+Core.NATIVE_LIBRARY_NAME+".so"
@@ -21,35 +25,37 @@ public class OpenCVJNILoader {
           "/usr/lib/jni/lib/",
           "/usr/lib/jni/"
       };
-      String erBack = "";
+
+      StringBuilder erBack = new StringBuilder();
       for (String local : possibleLocals) {
         File libDirectory = new File(local);
         if (libDirectory.isDirectory()) {
           File[] possibleLibs = libDirectory.listFiles();
-          for (File f : possibleLibs) {
+          for (File file : possibleLibs) {
             //System.out.println("Checking file: "+f);
-            if (!f.isDirectory() &&
-                f.getName().contains("opencv_java24") &&
-                f.getName().endsWith(".so")) {
+            if (!file.isDirectory()
+                && file.getName().contains("opencv_java24")
+                && file.getName().endsWith(".so")) {
               try {
-                System.load(f.getAbsolutePath());
-                Mat m = Mat.eye(3, 3, CvType.CV_8UC1);
-                System.out.println("Loading opencv lib " + f.getAbsolutePath());
+                System.load(file.getAbsolutePath());
+                Mat mat = Mat.eye(3, 3, CvType.CV_8UC1); //TODO: Not used?
+                LoggerUtilities.getLogger().log(Level.INFO,
+                    "Loading opencv lib " + file.getAbsolutePath());
                 return;
               } catch (Error e) {
+                LoggerUtilities.getLogger().log(Level.WARNING,
+                    "Error in OpenCV JNI Loader.\n" + Throwables.getStackTraceAsString(e));
                 //try the next one
-                erBack += " " + e.getMessage();
-                e.printStackTrace();
+                erBack.append(" ").append(e.getMessage());
               }
             }
           }
-
         } else {
-          erBack += "No file " + local;
+          erBack.append("No file ").append(local);
         }
       }
 
-      throw new RuntimeException(erBack);
+      throw new RuntimeException(erBack.toString());
     } else if (NativeResource.isWindows()) {
       String basedir = System.getenv("OPENCV_DIR");
       if (basedir == null) {
@@ -59,7 +65,7 @@ public class OpenCVJNILoader {
       System.err.println("OPENCV_DIR found at " + basedir);
       if ((!System.getProperty("sun.arch.data.model").contains("32") && basedir.contains("x64"))) {
 
-        basedir.replace("x64", "x86");
+        basedir.replace("x64", "x86"); //TODO: Result ignored?
         System.err.println("OPENCV_DIR environment variable is not set correctly");
       }
       basedir += "\\..\\..\\java\\";
@@ -78,12 +84,7 @@ public class OpenCVJNILoader {
       String lib = basedir.trim() + "/lib/lib" + Core.NATIVE_LIBRARY_NAME + ".dylib";
       System.err.println("OPENCV_DIR found at " + lib);
       System.load(lib);
-
     }
-
-    //Mat m  = Mat.eye(3, 3, CvType.CV_8UC1);
-    //System.out.println("m = " + m.dump());
-
   }
 
 }

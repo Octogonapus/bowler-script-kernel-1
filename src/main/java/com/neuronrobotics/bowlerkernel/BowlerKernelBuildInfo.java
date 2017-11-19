@@ -99,9 +99,9 @@ public class BowlerKernelBuildInfo {
             "Could not read line from tag.\n" + Throwables.getStackTraceAsString(e));
       }
       String[] splitAll = out.toString().split("[\n]+");
-      for (String aSplitAll : splitAll) {
-        if (aSplitAll.contains(target)) {
-          String[] split = aSplitAll.split("[=]+");
+      for (String string : splitAll) {
+        if (string.contains(target)) {
+          String[] split = string.split("[=]+");
           return split[1];
         }
       }

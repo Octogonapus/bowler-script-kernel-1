@@ -21,53 +21,51 @@ public class ColorDetector implements IObjectDetector {
   private Mat thresholded2 = new Mat();
 
   private Mat circles = new Mat(); // No need (and don't know how) to initialize it.
-  // The function later will do it... (to a 1*N*CV_32FC3)
-  //	Scalar hsv_min = new Scalar(200, 200, 200, 0);
-  //	Scalar hsv_max = new Scalar(255, 255, 255, 0);
-  //	Scalar hsv_min2 = new Scalar(50, 50, 50, 0);
-  //	Scalar hsv_max2 = new Scalar(255, 255, 255, 0);
+  //The function later will do it... (to a 1*N*CV_32FC3)
+  //Scalar hsvMin = new Scalar(200, 200, 200, 0);
+  //Scalar hsvMax = new Scalar(255, 255, 255, 0);
+  //Scalar hsvMin2 = new Scalar(50, 50, 50, 0);
+  //Scalar hsvMax2 = new Scalar(255, 255, 255, 0);
   private double[] data = new double[3];
   private List<Mat> lhsv;
   private Mat array255;
   private Mat distance;
-  private Scalar hsv_min;
-  private Scalar hsv_max;
-  private Scalar hsv_min2;
-  private Scalar hsv_max2;
+  private Scalar hsvMin;
+  private Scalar hsvMax;
+  private Scalar hsvMin2;
+  private Scalar hsvMax2;
 
-  public ColorDetector(Mat matImage, Scalar hsv_min, Scalar hsv_max, Scalar hsv_min2, Scalar
-      hsv_max2) {
-    this.hsv_min = hsv_min;
-    this.hsv_max = hsv_max;
-    this.hsv_min2 = hsv_min2;
-    this.hsv_max2 = hsv_max2;
+  public ColorDetector(Mat matImage, Scalar hsvMin, Scalar hsvMax, Scalar hsvMin2, Scalar
+      hsvMax2) {
+    this.hsvMin = hsvMin;
+    this.hsvMax = hsvMax;
+    this.hsvMin2 = hsvMin2;
+    this.hsvMax2 = hsvMax2;
     lhsv = new ArrayList<Mat>(3);
     array255 = new Mat(matImage.height(), matImage.width(),
         CvType.CV_8UC1);
     array255.setTo(new Scalar(255));
     distance = new Mat(matImage.height(), matImage.width(),
         CvType.CV_8UC1);
-
   }
 
   public void setThreshhold(Scalar hsv_min, Scalar hsv_max) {
-    this.hsv_min = hsv_min;
-    this.hsv_max = hsv_max;
+    this.hsvMin = hsv_min;
+    this.hsvMax = hsv_max;
   }
 
   public void setThreshhold2(Scalar hsv_min2, Scalar hsv_max2) {
-    this.hsv_min2 = hsv_min2;
-    this.hsv_max2 = hsv_max2;
+    this.hsvMin2 = hsv_min2;
+    this.hsvMax2 = hsv_max2;
   }
 
   public List<Detection> getObjects(BufferedImage in, BufferedImage disp) {
     Mat inputImage = new Mat();
     OpenCVImageConversionFactory.bufferedImageToMat(in, inputImage);
-    Mat displayImage = new Mat();
     // One way to select a range of colors by Hue
     Imgproc.cvtColor(inputImage, hsvImage, Imgproc.COLOR_BGR2HSV);
-    Core.inRange(hsvImage, hsv_min, hsv_max, thresholded);
-    Core.inRange(hsvImage, hsv_min2, hsv_max2, thresholded2);
+    Core.inRange(hsvImage, hsvMin, hsvMax, thresholded);
+    Core.inRange(hsvImage, hsvMin2, hsvMax2, thresholded2);
     Core.bitwise_or(thresholded, thresholded2, thresholded);
     // Notice that the thresholds don't really work as a "distance"
     // Ideally we would like to cut the image by hue and then pick just
@@ -78,13 +76,13 @@ public class ColorDetector implements IObjectDetector {
     // Or otherwise 510-S-V>Range
     // Anyhow, we do the following... Will see how fast it goes...
     Core.split(hsvImage, lhsv); // We get 3 2D one channel Mats
-    Mat S = lhsv.get(1);
-    Mat V = lhsv.get(2);
-    Core.subtract(array255, S, S);
-    Core.subtract(array255, V, V);
-    S.convertTo(S, CvType.CV_32F);
-    V.convertTo(V, CvType.CV_32F);
-    Core.magnitude(S, V, distance);
+    Mat saturation = lhsv.get(1);
+    Mat value = lhsv.get(2);
+    Core.subtract(array255, saturation, saturation);
+    Core.subtract(array255, value, value);
+    saturation.convertTo(saturation, CvType.CV_32F);
+    value.convertTo(value, CvType.CV_32F);
+    Core.magnitude(saturation, value, distance);
     Core.inRange(distance, new Scalar(0.0), new Scalar(200.0), thresholded2);
     Core.bitwise_and(thresholded, thresholded2, thresholded);
     // Apply the Hough Transform to find the circles
@@ -94,6 +92,7 @@ public class ColorDetector implements IObjectDetector {
 
 
     //Make the display image the thresholded image
+    Mat displayImage = new Mat();
     thresholded.copyTo(displayImage);
 
     // Imgproc.Canny(thresholded, thresholded, 500, 250);
@@ -130,8 +129,8 @@ public class ColorDetector implements IObjectDetector {
             String.format("Circles (" + String.valueOf(data[0]) + ","
                 + String.valueOf(data[1]) + ","
                 + String.valueOf(data[2])
-                + ")"), new Point(30, 30), 2 // FONT_HERSHEY_SCRIPT_SIMPLEX
-            , .5, new Scalar(100, 10, 10, 255), 3);
+                + ")"), new Point(30, 30), 2, // FONT_HERSHEY_SCRIPT_SIMPLEX
+            .5, new Scalar(100, 10, 10, 255), 3);
         for (int i = 0; i < myArray.size(); i++) {
 
           Point centerTmp = new Point(myArray.get(i).getX(), myArray.get(i).getY());

@@ -230,6 +230,12 @@ public class BowlerKernel {
 
   }
 
+  /**
+   * Load history from the history file
+   *
+   * @return History
+   * @throws IOException FileReader IOException
+   */
   public static ArrayList<String> loadHistory() throws IOException {
     ArrayList<String> history = new ArrayList<>();
     // Construct BufferedReader from FileReader
@@ -243,6 +249,11 @@ public class BowlerKernel {
     return history;
   }
 
+  /**
+   * Write history to the history file.
+   *
+   * @param history History
+   */
   public static void writeHistory(List<String> history) {
     LoggerUtilities.getLogger().log(Level.INFO,
         "Saving history.");

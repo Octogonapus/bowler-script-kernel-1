@@ -19,7 +19,6 @@ import org.opencv.objdetect.CascadeClassifier;
 
 public class HaarDetector implements IObjectDetector {
   private MatOfRect faceDetections = new MatOfRect();
-  ;
   private CascadeClassifier faceDetector;
   private double scale = .3;
 
@@ -35,34 +34,35 @@ public class HaarDetector implements IObjectDetector {
     OpenCVImageConversionFactory.bufferedImageToMat(in, inputImage);
     try {
       Mat localImage = new Mat();
-      Size s = new Size(in.getWidth(), in.getHeight());
-      Imgproc.resize(inputImage, localImage, new Size(s.width * scale, s.height * scale));
+      Size size = new Size(in.getWidth(), in.getHeight());
+      Imgproc.resize(inputImage, localImage, new Size(size.width * scale, size.height * scale));
       Imgproc.cvtColor(localImage, localImage, Imgproc.COLOR_BGR2GRAY);
 
       faceDetector.detectMultiScale(localImage, faceDetections);
       Rect[] smallArray = faceDetections.toArray();
-      ArrayList<Detection> myArray = new ArrayList<Detection>();
+      ArrayList<Detection> myArray = new ArrayList<>();
 
-      for (int i = 0; i < smallArray.length; i++) {
-        Rect r = smallArray[i];
-        myArray.add(new Detection((r.x / scale), (r.y / scale), (r.width / scale)));
+      for (Rect rect : smallArray) {
+        myArray.add(new Detection((rect.x / scale), (rect.y / scale), (rect.width / scale)));
       }
+
       Mat displayImage = new Mat();
       OpenCVImageConversionFactory.bufferedImageToMat(disp, displayImage);
-      Point center = null;//
+      Point center;
       //System.out.println(String.format("Detected %s faces", myArray.length));
       // Draw a bounding box around each face.
       for (Detection rect : myArray) {
         //Core.rectangle(displayImage, rect.pt, new Point(rect.x + rect.width, rect.y + rect
         // .height), new Scalar(0, 255, 0));
-        center = new Point(rect.getX() + (rect.getSize() / 2), rect.getY() + (rect.getSize() / 2));
+        center = new Point(rect.getX() + (rect.getSize() / 2),
+            rect.getY() + (rect.getSize() / 2));
 
 
         Size objectSize = new Size((rect.getSize() / 2),
             (rect.getSize() / 2));
 
-        Core.ellipse(displayImage, center, objectSize, 0, 0, 360, new Scalar(255, 0,
-            255), 4, 8, 0);
+        Core.ellipse(displayImage, center, objectSize, 0, 0, 360,
+            new Scalar(255, 0, 255), 4, 8, 0);
       }
       OpenCVImageConversionFactory.matToBufferedImage(displayImage).copyData(disp.getRaster());
 
@@ -70,7 +70,7 @@ public class HaarDetector implements IObjectDetector {
     } catch (CvException | NullPointerException | IllegalArgumentException e2) {
       // startup noise
       // e.printStackTrace();
-      return new ArrayList<Detection>();
+      return new ArrayList<>();
     }
   }
 
