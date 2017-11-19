@@ -1,7 +1,9 @@
 package com.neuronrobotics.bowlerstudio;
 
+import com.google.common.base.Throwables;
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
 import com.neuronrobotics.imageprovider.OpenCVJNILoader;
+import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.VoiceManager;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,17 +17,12 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import jline.ConsoleReader;
 import jline.Terminal;
 
-//import org.springframework.boot.SpringApplication;
-//import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-//import org.springframework.context.annotation.ComponentScan;
-//import org.springframework.context.annotation.Configuration;
-
 public class BowlerKernel {
 
-  private static final String CSG = null;
   private static File historyFile = new File(
       ScriptingEngine.getWorkspace().getAbsolutePath() + "/bowler.history");
 
@@ -36,8 +33,8 @@ public class BowlerKernel {
       try {
         historyFile.createNewFile();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        LoggerUtilities.getLogger().log(Level.WARNING,
+            "Could not create new history file.\n" + Throwables.getStackTraceAsString(e));
       }
       history.add("println SDKBuildInfo.getVersion()");
       history.add("for(int i=0;i<1000000;i++) { println dyio.getValue(0) }");
@@ -77,34 +74,33 @@ public class BowlerKernel {
   }
 
   /**
-   * @param args the command line arguments
-   * @throws Exception
+   * @param args The command line arguments
    */
-  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws Exception {
-
     if (args.length == 0) {
       fail();
     }
+
     OpenCVJNILoader.load(); // Loads the OpenCV JNI (java native interface)
-    //		File servo = ScriptingEngine.fileFromGit("https://github
-    // .com/CommonWealthRobotics/BowlerStudioVitamins.git",
-    //							"BowlerStudioVitamins/stl/servo/smallservo.stl");
-    //
-    //		ArrayList<CSG>  cad = (ArrayList<CSG> )ScriptingEngine.inlineGistScriptRun
-    // ("4814b39ee72e9f590757", "javaCad.groovy" , null);
-    //		System.out.println(servo.exists()+" exists: "+servo);
+    //    File servo = ScriptingEngine.fileFromGit(
+    //        "https://github.com/CommonWealthRobotics/BowlerStudioVitamins.git",
+    //        "BowlerStudioVitamins/stl/servo/smallservo.stl");
+    //    ArrayList<CSG> cad = (ArrayList<CSG>) ScriptingEngine.inlineGistScriptRun(
+    //        "4814b39ee72e9f590757",
+    //        "javaCad.groovy",
+    //        null);
+    //    LoggerUtilities.getLogger().log(Level.INFO,
+    //        servo.exists() + " exists: " + servo);
 
     boolean startLoadingScripts = false;
     Object ret = null;
     for (String s : args) {
       if (startLoadingScripts) {
         try {
-
-          ret = ScriptingEngine
-              .inlineFileScriptRun(new File(s), null);
+          ret = ScriptingEngine.inlineFileScriptRun(new File(s), null);
         } catch (Error e) {
-          e.printStackTrace();
+          LoggerUtilities.getLogger().log(Level.WARNING,
+              "Could not run script.\n" + Throwables.getStackTraceAsString(e));
           fail();
         }
       }
@@ -115,54 +111,49 @@ public class BowlerKernel {
     startLoadingScripts = false;
 
     for (String s : args) {
-
       if (startLoadingScripts) {
         try {
-          ret = ScriptingEngine.inlineFileScriptRun(new File(s),
-              (ArrayList<Object>) ret);
+          ret = ScriptingEngine.inlineFileScriptRun(new File(s), (ArrayList<Object>) ret);
         } catch (Error e) {
-          e.printStackTrace();
+          LoggerUtilities.getLogger().log(Level.WARNING,
+              "Could not run script.\n" + Throwables.getStackTraceAsString(e));
           fail();
         }
       }
+
       if (s.contains("pipe") || s.contains("-p")) {
         startLoadingScripts = true;
       }
     }
+
     boolean runShell = false;
     String groovy = "Groovy";
     String shellTypeStorage = groovy;
-    for (String s : args) {
-
+    for (String elem : args) {
       if (runShell) {
         try {
-          shellTypeStorage = s;
+          shellTypeStorage = elem;
         } catch (Exception e) {
           shellTypeStorage = groovy;
         }
         break;
       }
-      if (s.contains("repl") || s.contains("-r")) {
+
+      if (elem.contains("repl") || elem.contains("-r")) {
         runShell = true;
       }
     }
 
-    System.out.println("Starting Bowler REPL in langauge: "
-        + shellTypeStorage);
-    // sample from
-    // http://jline.sourceforge.net/testapidocs/src-html/jline/example/Example.html
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "Starting Bowler REPL in language: " + shellTypeStorage);
 
     if (!Terminal.getTerminal().isSupported()) {
-      System.out.println("Terminal not supported "
-          + Terminal.getTerminal());
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Terminal not supported: " + Terminal.getTerminal());
     }
-    //Terminal.getTerminal().initializeTerminal();
 
     ConsoleReader reader = new ConsoleReader();
-    reader.addTriggeredAction(Terminal.CTRL_C, e -> {
-      System.exit(0);
-    });
-
+    reader.addTriggeredAction(Terminal.CTRL_C, e -> System.exit(0));
 
     if (!historyFile.exists()) {
       historyFile.createNewFile();
@@ -181,31 +172,24 @@ public class BowlerKernel {
       writeHistory(reader.getHistory().getHistoryList());
     } else {
       List<String> history = loadHistory();
-      for (String h : history) {
-        reader.getHistory().addToHistory(h);
+      for (String elem : history) {
+        reader.getHistory().addToHistory(elem);
       }
     }
     reader.setBellEnabled(false);
     reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
 
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-
-        writeHistory(reader.getHistory().getHistoryList());
-      }
-    });
-
-    //SpringApplication.run(SpringBowlerUI.class, new String[]{});
+    Runtime.getRuntime().addShutdownHook(new Thread(() ->
+        writeHistory(reader.getHistory().getHistoryList())));
 
     String line;
     try {
-      while ((line = reader.readLine("Bowler " + shellTypeStorage
-          + "> ")) != null) {
+      while ((line = reader.readLine("Bowler " + shellTypeStorage + "> ")) != null) {
         if (line.equalsIgnoreCase("quit")
             || line.equalsIgnoreCase("exit")) {
           break;
         }
+
         if (line.equalsIgnoreCase("history")
             || line.equalsIgnoreCase("h")) {
           List<String> h = reader.getHistory().getHistoryList();
@@ -214,6 +198,7 @@ public class BowlerKernel {
           }
           continue;
         }
+
         if (line.startsWith("shellType")) {
           try {
             shellTypeStorage = line.split(" ")[1];
@@ -222,20 +207,25 @@ public class BowlerKernel {
           }
           continue;
         }
+
         try {
           ret = ScriptingEngine.inlineScriptStringRun(line, null,
               shellTypeStorage);
           if (ret != null) {
-            System.out.println(ret);
+            LoggerUtilities.getLogger().log(Level.INFO,
+                ret.toString());
           }
         } catch (Error e) {
-          e.printStackTrace();
+          LoggerUtilities.getLogger().log(Level.SEVERE,
+              "Error: " + Throwables.getStackTraceAsString(e));
         } catch (Exception e) {
-          e.printStackTrace();
+          LoggerUtilities.getLogger().log(Level.WARNING,
+              "Could not run script.\n" + Throwables.getStackTraceAsString(e));
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Exception.\n" + Throwables.getStackTraceAsString(e));
     }
 
   }
@@ -245,7 +235,7 @@ public class BowlerKernel {
     // Construct BufferedReader from FileReader
     BufferedReader br = new BufferedReader(new FileReader(historyFile));
 
-    String line = null;
+    String line;
     while ((line = br.readLine()) != null) {
       history.add(line);
     }
@@ -254,7 +244,9 @@ public class BowlerKernel {
   }
 
   public static void writeHistory(List<String> history) {
-    System.out.println("Saving history");
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "Saving history.");
+
     FileOutputStream fos;
     try {
       fos = new FileOutputStream(historyFile);
@@ -266,34 +258,54 @@ public class BowlerKernel {
 
       bw.close();
     } catch (FileNotFoundException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Could not construct FileOutputStream to write history.\n"
+              + Throwables.getStackTraceAsString(e));
     } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Could not write to history.\n" + Throwables.getStackTraceAsString(e));
     }
-
-
   }
 
+  /**
+   * Speak a string using default parameters.
+   *
+   * @param msg Message to say
+   * @return 0
+   */
   public static int speak(String msg) {
-
     return speak(msg, 175.0, 120.0, 41.0, 1.0, 1.0);
   }
 
-  @SuppressWarnings("unused")
-  public static int speak(String msg, Double rate, Double pitch, Double range, Double shift,
+  /**
+   * Speak a string.
+   *
+   * @param msg Message to say
+   * @param rate Speech rate
+   * @param pitch Speech pitch
+   * @param range Speech range
+   * @param shift Speech shift
+   * @param volume Speech volume
+   * @return 0
+   */
+  public static int speak(String msg,
+                          Double rate,
+                          Double pitch,
+                          Double range,
+                          Double shift,
                           Double volume) {
     System.setProperty("freetts.voices", "com.sun.speech.freetts.en.us.cmu_us_kal"
         + ".KevinVoiceDirectory");
     VoiceManager voiceManager = VoiceManager.getInstance();
     com.sun.speech.freetts.Voice voice = voiceManager.getVoice("kevin16");
 
-    System.out.println("Rate " + rate);
-    System.out.println("Pitch hertz " + pitch);
-    System.out.println("PitchRange " + range);
-    System.out.println("PitchShift " + shift);
-    System.out.println("Volume " + volume);
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "Speaking.\nRate: " + rate
+            + "\nPitch hertz: " + pitch
+            + "\nPitch Range: " + range
+            + "\nPitch Shift: " + shift
+            + "\nVolume: " + volume);
+
     if (voice != null) {
       voice.setRate(rate.floatValue());
       voice.setPitch(pitch.floatValue());
@@ -304,11 +316,13 @@ public class BowlerKernel {
       voice.speak(msg);
       voice.deallocate();
     } else {
-      System.out.println("All voices available:");
+      LoggerUtilities.getLogger().log(Level.INFO,
+          "All voices available:");
+
       com.sun.speech.freetts.Voice[] voices = voiceManager.getVoices();
-      for (int i = 0; i < voices.length; i++) {
-        System.out.println(
-            "    " + voices[i].getName() + " (" + voices[i].getDomain() + " domain)");
+      for (Voice voice1 : voices) {
+        LoggerUtilities.getLogger().log(Level.INFO,
+            "    " + voice1.getName() + " (" + voice1.getDomain() + " domain)");
       }
     }
 
@@ -319,7 +333,6 @@ public class BowlerKernel {
     //
     // System.out.println("Syllables# = "+feature.process(null));
     // } catch (ProcessException e) {
-    // // TODO Auto-generated catch block
     // e.printStackTrace();
     // }
     //

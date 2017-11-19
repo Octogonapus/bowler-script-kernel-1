@@ -1,11 +1,14 @@
 package com.neuronrobotics.bowlerstudio.assets;
 
+import com.google.common.base.Throwables;
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.image.Image;
@@ -50,11 +53,11 @@ public class AssetFactory {
 
   public static Image loadAsset(String file) throws Exception {
     if (cache.get(file) == null) {
-      File f = loadFile(file);
-      if (f.getName().endsWith(".fxml")) {
+      File assetFile = loadFile(file);
+      if (assetFile.getName().endsWith(".fxml")) {
         loadLayout(file);
         return null;
-      } else if (!f.exists() && f.getName().endsWith(".png")) {
+      } else if (!assetFile.exists() && assetFile.getName().endsWith(".png")) {
         WritableImage obj_img = new WritableImage(30, 30);
         byte alpha = (byte) 0;
 
@@ -68,7 +71,8 @@ public class AssetFactory {
         }
 
         cache.put(file, obj_img);
-        System.out.println("No image at " + file);
+        LoggerUtilities.getLogger().log(Level.INFO,
+            "No image at " + file);
 
         try {
           File imageFile = ScriptingEngine.createFile(getGitSource(), file, "create file");
@@ -76,15 +80,17 @@ public class AssetFactory {
             String fileName = imageFile.getName();
             ImageIO.write(SwingFXUtils.fromFXImage(obj_img, null),
                 fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(), imageFile);
-
-          } catch (IOException ignored) {
+          } catch (IOException e) {
+            LoggerUtilities.getLogger().log(Level.WARNING,
+                "Could not write image file.\n" + Throwables.getStackTraceAsString(e));
           }
           ScriptingEngine.createFile(getGitSource(), file, "saving new content");
         } catch (Exception e) {
-          e.printStackTrace();
+          LoggerUtilities.getLogger().log(Level.WARNING,
+              "Could not create file.\n" + Throwables.getStackTraceAsString(e));
         }
       } else {
-        cache.put(file, new Image(f.toURI().toString()));
+        cache.put(file, new Image(assetFile.toURI().toString()));
       }
     }
     return cache.get(file);
@@ -103,7 +109,8 @@ public class AssetFactory {
   }
 
   public static void setGitSource(String gitSource, String assetRepoBranch) throws Exception {
-    System.err.println("Assets from: " + gitSource + "#" + assetRepoBranch);
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "Assets from " + gitSource + "#" + assetRepoBranch);
     setAssetRepoBranch(assetRepoBranch);
     AssetFactory.gitSource = gitSource;
     cache.clear();

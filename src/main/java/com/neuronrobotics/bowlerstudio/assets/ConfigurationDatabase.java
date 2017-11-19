@@ -12,19 +12,18 @@ import org.kohsuke.github.GHMyself;
 import org.kohsuke.github.GHRepository;
 
 public class ConfigurationDatabase {
+
   private static final String repo = "BowlerStudioConfiguration";
   private static final String HTTPS_GITHUB_COM_NEURON_ROBOTICS_BOWLER_STUDIO_CONFIGURATION_GIT =
       "https://github.com/CommonWealthRobotics/" + repo + ".git";
   private static final Type TT_mapStringString
-      = new TypeToken<HashMap<String, HashMap<String, Object>>>() {
-  }.getType();
+      = new TypeToken<HashMap<String, HashMap<String, Object>>>() {}.getType();
   private static String gitSource = null; // madhephaestus
   private static String dbFile = "database.json";
   private static boolean checked;
   private static HashMap<String, HashMap<String, Object>> database = null;
   //chreat the gson object, this is the parsing factory
   private static Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
-
 
   public static Object getObject(String paramsKey, String objectKey, Object defaultValue) {
     if (getParamMap(paramsKey).get(objectKey) == null) {
@@ -46,7 +45,6 @@ public class ConfigurationDatabase {
   public static Object removeObject(String paramsKey, String objectKey) {
     return getParamMap(paramsKey).remove(objectKey);
   }
-
 
   public static void save() {
     String writeOut;

@@ -1,9 +1,12 @@
 package com.neuronrobotics.bowlerkernel;
 
+import com.google.common.base.Throwables;
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
 
 /**
  * The Class SDKBuildInfo.
@@ -24,13 +27,13 @@ public class BowlerKernelBuildInfo {
    * @return the version
    */
   public static String getVersion() {
-    String s = getTag("app.version");
+    String out = getTag("app.version");
 
-    if (s == null) {
-      s = "0.0.0";
+    if (out == null) {
+      out = "0.0.0";
     }
 
-    return s;
+    return out;
   }
 
   /**
@@ -66,8 +69,8 @@ public class BowlerKernelBuildInfo {
    * @return the builds the info
    */
   public static int[] getBuildInfo() {
-    String s = getVersion();
-    String[] splits = s.split("[.]+");
+    String out = getVersion();
+    String[] splits = out.split("[.]+");
     int[] rev = new int[3];
     for (int i = 0; i < 3; i++) {
       rev[i] = new Integer(splits[i]);
@@ -83,17 +86,19 @@ public class BowlerKernelBuildInfo {
    */
   private static String getTag(String target) {
     try {
-      StringBuilder s = new StringBuilder();
+      StringBuilder out = new StringBuilder();
       InputStream is = getBuildPropertiesStream();
       BufferedReader br = new BufferedReader(new InputStreamReader(is));
       String line;
       try {
         while (null != (line = br.readLine())) {
-          s.append(line).append("\n");
+          out.append(line).append("\n");
         }
       } catch (IOException e) {
+        LoggerUtilities.getLogger().log(Level.WARNING,
+            "Could not read line from tag.\n" + Throwables.getStackTraceAsString(e));
       }
-      String[] splitAll = s.toString().split("[\n]+");
+      String[] splitAll = out.toString().split("[\n]+");
       for (String aSplitAll : splitAll) {
         if (aSplitAll.contains(target)) {
           String[] split = aSplitAll.split("[=]+");
@@ -112,18 +117,20 @@ public class BowlerKernelBuildInfo {
    * @return the builds the date
    */
   public static String getBuildDate() {
-    StringBuilder s = new StringBuilder();
+    StringBuilder out = new StringBuilder();
     InputStream is = BowlerKernelBuildInfo.class
         .getResourceAsStream("/META-INF/MANIFEST.MF");
     BufferedReader br = new BufferedReader(new InputStreamReader(is));
     String line;
     try {
       while (null != (line = br.readLine())) {
-        s.append(line).append("\n");
+        out.append(line).append("\n");
       }
     } catch (IOException e) {
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Could not get build date.\n" + Throwables.getStackTraceAsString(e));
     }
-    // System.out.println("Manifest:\n"+s);
+
     return "";
   }
 

@@ -19,20 +19,16 @@ public class WheelCSGPhysicsManager extends CSGPhysicsManager {
   public WheelCSGPhysicsManager(ArrayList<CSG> baseCSG,
                                 Transform pose,
                                 double mass,
-                                PhysicsCore c,
-                                RaycastVehicle v,
+                                PhysicsCore core,
+                                RaycastVehicle vehicle,
                                 int wheelIndex) {
-    super(baseCSG, pose, mass, false, c);
-    this.vehicle = v;
+    super(baseCSG, pose, mass, false, core);
+    this.vehicle = vehicle;
     this.wheelIndex = wheelIndex;
   }
 
   public static float getMotorStrength() {
     return muscleStrength;
-  }
-
-  public static void setMuscleStrength(float ms) {
-    muscleStrength = ms;
   }
 
   @Override
@@ -64,6 +60,10 @@ public class WheelCSGPhysicsManager extends CSGPhysicsManager {
 
   public void setTarget(double target) {
     this.target = target;
+  }
+
+  public static void setMuscleStrength(float ms) {
+    muscleStrength = ms;
   }
 
   public void setMuscleStrength(double muscleStrength) {

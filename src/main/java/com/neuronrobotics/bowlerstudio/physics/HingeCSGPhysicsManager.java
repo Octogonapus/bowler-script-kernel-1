@@ -17,8 +17,8 @@ public class HingeCSGPhysicsManager extends CSGPhysicsManager {
   public HingeCSGPhysicsManager(ArrayList<CSG> baseCSG,
                                 Transform pose,
                                 double mass,
-                                PhysicsCore c) {
-    super(baseCSG, pose, mass, false, c);
+                                PhysicsCore core) {
+    super(baseCSG, pose, mass, false, core);
   }
 
   public static float getMuscleStrength() {

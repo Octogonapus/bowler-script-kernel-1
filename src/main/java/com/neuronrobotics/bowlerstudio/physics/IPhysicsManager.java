@@ -9,35 +9,35 @@ import javafx.scene.transform.Affine;
 public interface IPhysicsManager {
 
   /**
-   * Run the update for this ridgid body. Run any controllers for links
+   * Run the update for this ridgid body. Run any controllers for links.
    *
    * @param timeStep
    */
   void update(float timeStep);
 
   /**
-   * Return a RigidBody for the physics engine
+   * Return a RigidBody for the physics engine.
    *
    * @return
    */
   RigidBody getFallRigidBody();
 
   /**
-   * Return the CSG that tis being modelsed
+   * Return the CSG that is being modeled.
    *
    * @return
    */
   ArrayList<CSG> getBaseCSG();
 
   /**
-   * Return the current spatial location fo the rigid body
+   * Return the current spatial location fo the rigid body.
    *
    * @return
    */
   Affine getRigidBodyLocation();
 
   /**
-   * The Bullet version of the location
+   * The Bullet version of the location.
    *
    * @return
    */

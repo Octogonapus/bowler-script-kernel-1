@@ -12,9 +12,12 @@ import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.Transform;
+import com.google.common.base.Throwables;
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.sdk.util.ThreadUtil;
 import eu.mihosoft.vrl.v3d.CSG;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import javafx.application.Platform;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
@@ -23,10 +26,9 @@ import javax.vecmath.Vector3f;
 public class PhysicsCore {
 
   private BroadphaseInterface broadphase = new DbvtBroadphase();
-  private DefaultCollisionConfiguration collisionConfiguration
-      = new DefaultCollisionConfiguration();
+  private DefaultCollisionConfiguration collisionConfiguration =
+      new DefaultCollisionConfiguration();
   private CollisionDispatcher dispatcher = new CollisionDispatcher(collisionConfiguration);
-
   private SequentialImpulseConstraintSolver solver = new SequentialImpulseConstraintSolver();
 
   private DiscreteDynamicsWorld dynamicsWorld
@@ -43,8 +45,8 @@ public class PhysicsCore {
 
   private Thread physicsThread = null;
   private int simulationSubSteps = 5;
-  private float lin_damping;
-  private float ang_damping;
+  private float linearDampening;
+  private float angularDampening;
   private float linearSleepThreshhold;
   private float angularSleepThreshhold;
   private float deactivationTime;
@@ -127,8 +129,8 @@ public class PhysicsCore {
   }
 
   public void setDamping(float lin_damping, float ang_damping) {
-    this.lin_damping = (lin_damping);
-    this.ang_damping = (ang_damping);
+    this.linearDampening = (lin_damping);
+    this.angularDampening = (ang_damping);
 
     for (IPhysicsManager m : getPhysicsObjects()) {
       m.getFallRigidBody().setDamping(lin_damping, ang_damping);
@@ -161,10 +163,12 @@ public class PhysicsCore {
             if (took < msTime) {
               ThreadUtil.wait((int) (msTime - took));
             } else {
-              System.out.println("Real time physics broken: " + took);
+              LoggerUtilities.getLogger().log(Level.INFO,
+                  "Real time physics broken: " + took);
             }
-          } catch (Exception E) {
-            E.printStackTrace();
+          } catch (Exception e) {
+            LoggerUtilities.getLogger().log(Level.WARNING,
+                "Exception in physics thread.\n" + Throwables.getStackTraceAsString(e));
           }
         }
       });
@@ -175,8 +179,8 @@ public class PhysicsCore {
 
   public ArrayList<CSG> getCsgFromEngine() {
     ArrayList<CSG> csg = new ArrayList<>();
-    for (IPhysicsManager o : getPhysicsObjects()) {
-      csg.addAll(o.getBaseCSG());
+    for (IPhysicsManager physics : getPhysicsObjects()) {
+      csg.addAll(physics.getBaseCSG());
     }
     return csg;
   }
@@ -193,16 +197,18 @@ public class PhysicsCore {
     //    if ((((float) (System.currentTimeMillis() - startTime)) / 1000.0f) > timeStep) {
     //      // System.out.println(" Compute took too long "+timeStep);
     //    }
-    for (IPhysicsManager o : getPhysicsObjects()) {
-      o.update(timeStep);
+    for (IPhysicsManager physics : getPhysicsObjects()) {
+      physics.update(timeStep);
     }
 
     Platform.runLater(() -> {
-      for (IPhysicsManager o : getPhysicsObjects()) {
+      for (IPhysicsManager physics : getPhysicsObjects()) {
         try {
-          TransformFactory.bulletToAffine(o.getRigidBodyLocation(), o.getUpdateTransform());
+          TransformFactory.bulletToAffine(physics.getRigidBodyLocation(), physics.getUpdateTransform());
         } catch (Exception e) {
-          e.printStackTrace();
+          LoggerUtilities.getLogger().log(Level.WARNING,
+              "Exception when transforming bullet to affine.\n"
+                  + Throwables.getStackTraceAsString(e));
         }
       }
     });
@@ -295,11 +301,11 @@ public class PhysicsCore {
   }
 
   public float getLin_damping() {
-    return lin_damping;
+    return linearDampening;
   }
 
   public float getAng_damping() {
-    return ang_damping;
+    return angularDampening;
   }
 
   public float getLinearSleepThreshhold() {

@@ -11,6 +11,7 @@ apply plugin: 'java'
 apply plugin: 'signing'
 apply plugin: 'maven'
 apply plugin: 'pmd'
+apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
 apply plugin: 'jacoco'
 
@@ -96,8 +97,16 @@ String getOsArch() {
     return System.getProperty("os.arch")
 }
 
-//https://oss.sonatype.org/service/local/repositories/releases/content/com/neuronrobotics/nrjavaserial/3.10.1/nrjavaserial-3.10.1.jar
+checkstyle {
+    configFile = file("$rootDir/checkstyle.xml")
+    toolVersion = "8.1"
+}
 
+pmd {
+    ruleSetFiles = files(file("$rootDir/pmd-ruleset.xml"))
+}
+
+//https://oss.sonatype.org/service/local/repositories/releases/content/com/neuronrobotics/nrjavaserial/3.10.1/nrjavaserial-3.10.1.jar
 repositories {
     mavenCentral()
     jcenter()

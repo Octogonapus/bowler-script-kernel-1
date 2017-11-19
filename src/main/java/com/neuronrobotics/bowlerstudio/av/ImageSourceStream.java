@@ -1,9 +1,11 @@
 package com.neuronrobotics.bowlerstudio.av;
 
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Vector;
+import java.util.logging.Level;
 import javax.media.Buffer;
 import javax.media.Format;
 import javax.media.format.VideoFormat;
@@ -49,7 +51,8 @@ public class ImageSourceStream implements PullBufferStream {
     // Check if we've finished all the frames.
     if (nextImage >= images.size()) {
       // We are done. Set EndOfMedia.
-      System.err.println("Done reading all images.");
+      LoggerUtilities.getLogger().log(Level.INFO,
+          "Done reading all images.");
       buf.setEOM(true);
       buf.setOffset(0);
       buf.setLength(0);
@@ -60,13 +63,14 @@ public class ImageSourceStream implements PullBufferStream {
     String imageFile = (String) images.elementAt(nextImage);
     nextImage++;
 
-    System.err.println("  - reading image file: " + imageFile);
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "  - reading image file: " + imageFile);
 
     // Open a random access file for the next image.
     RandomAccessFile raFile;
     raFile = new RandomAccessFile(imageFile, "r");
 
-    byte data[] = null;
+    byte[] data = null;
 
     // Check the input buffer type & size.
     if (buf.getData() instanceof byte[]) {
@@ -82,7 +86,8 @@ public class ImageSourceStream implements PullBufferStream {
     // Read the entire JPEG image from the file.
     raFile.readFully(data, 0, (int) raFile.length());
 
-    System.err.println("    read " + raFile.length() + " bytes.");
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "    read " + raFile.length() + " bytes.");
 
     buf.setOffset(0);
     buf.setLength((int) raFile.length());

@@ -62,14 +62,14 @@ import javax.media.protocol.FileTypeDescriptor;
  * This program takes a list of JPEG image files and convert them into a QuickTime movie.
  */
 public class ImagesToVideo implements ControllerListener, DataSinkListener {
-  Object waitSync = new Object();
-  boolean stateTransitionOK = true;
-  Object waitFileSync = new Object();
-  boolean fileDone = false;
-  boolean fileSuccess = true;
+
+  private Object waitSync = new Object();
+  private boolean stateTransitionOK = true;
+  private Object waitFileSync = new Object();
+  private boolean fileDone = false;
+  private boolean fileSuccess = true;
 
   public static void main(String args[]) {
-
     if (args.length == 0) {
       prUsage();
     }
@@ -77,40 +77,50 @@ public class ImagesToVideo implements ControllerListener, DataSinkListener {
     // Parse the arguments.
     int i = 0;
     int width = -1, height = -1, frameRate = 1;
-    Vector<String> inputFiles = new Vector<String>();
+    Vector<String> inputFiles = new Vector<>();
     String outputURL = null;
 
     while (i < args.length) {
+      switch (args[i]) {
+        case "-w":
+          i++;
+          if (i >= args.length) {
+            prUsage();
+          }
+          width = Integer.parseInt(args[i]);
+          break;
 
-      if (args[i].equals("-w")) {
-        i++;
-        if (i >= args.length) {
-          prUsage();
-        }
-        width = new Integer(args[i]).intValue();
-      } else if (args[i].equals("-h")) {
-        i++;
-        if (i >= args.length) {
-          prUsage();
-        }
-        height = new Integer(args[i]).intValue();
-      } else if (args[i].equals("-f")) {
-        i++;
-        if (i >= args.length) {
-          prUsage();
-        }
-        frameRate = new Integer(args[i]).intValue();
-      } else if (args[i].equals("-o")) {
-        i++;
-        if (i >= args.length) {
-          prUsage();
-        }
-        outputURL = args[i];
-      } else {
-        for (int j = 0; j < 120; j++) {
-          inputFiles.addElement(args[i]);
-        }
+        case "-h":
+          i++;
+          if (i >= args.length) {
+            prUsage();
+          }
+          height = Integer.parseInt(args[i]);
+          break;
+
+        case "-f":
+          i++;
+          if (i >= args.length) {
+            prUsage();
+          }
+          frameRate = Integer.parseInt(args[i]);
+          break;
+
+        case "-o":
+          i++;
+          if (i >= args.length) {
+            prUsage();
+          }
+          outputURL = args[i];
+          break;
+
+        default:
+          for (int j = 0; j < 120; j++) {
+            inputFiles.addElement(args[i]);
+          }
+          break;
       }
+
       i++;
     }
 
@@ -159,9 +169,7 @@ public class ImagesToVideo implements ControllerListener, DataSinkListener {
   /**
    * Create a media locator from the given string.
    */
-  @SuppressWarnings("unused")
   static MediaLocator createMediaLocator(String url) {
-
     MediaLocator ml;
 
     if (url.indexOf(":") > 0 && (ml = new MediaLocator(url)) != null) {
@@ -328,7 +336,6 @@ public class ImagesToVideo implements ControllerListener, DataSinkListener {
    * Controller Listener.
    */
   public void controllerUpdate(ControllerEvent evt) {
-
     if (evt instanceof ConfigureCompleteEvent || evt instanceof RealizeCompleteEvent
         || evt instanceof PrefetchCompleteEvent) {
       synchronized (waitSync) {
@@ -365,7 +372,6 @@ public class ImagesToVideo implements ControllerListener, DataSinkListener {
    * Event handler for the file writer.
    */
   public void dataSinkUpdate(DataSinkEvent evt) {
-
     if (evt instanceof EndOfStreamEvent) {
       synchronized (waitFileSync) {
         fileDone = true;
@@ -379,11 +385,5 @@ public class ImagesToVideo implements ControllerListener, DataSinkListener {
       }
     }
   }
-
-  ///////////////////////////////////////////////
-  //
-  // Inner classes.
-  ///////////////////////////////////////////////
-
 
 }

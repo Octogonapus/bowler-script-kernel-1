@@ -71,9 +71,8 @@ public class TransformFactory extends com.neuronrobotics.sdk.addons.kinematics.T
     t1.x = nr.getX();
     t1.y = nr.getY();
     t1.z = nr.getZ();
-    double s = 1.0;
 
-    Matrix4d rotation = new Matrix4d(q1, t1, s);
+    Matrix4d rotation = new Matrix4d(q1, t1, 1.0);
     return new eu.mihosoft.vrl.v3d.Transform(rotation);
   }
 

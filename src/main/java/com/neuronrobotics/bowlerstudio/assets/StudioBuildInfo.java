@@ -1,21 +1,24 @@
 package com.neuronrobotics.bowlerstudio.assets;
 
+import com.google.common.base.Throwables;
 import com.neuronrobotics.bowlerstudio.BowlerKernel;
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
 
 public class StudioBuildInfo {
   private static Class baseBuildInfoClass = BowlerKernel.class;
 
   public static String getVersion() {
-    String s = getTag("app.version");
+    String out = getTag("app.version");
 
-    if (s == null) {
+    if (out == null) {
       throw new RuntimeException("Failed to load version number");
     }
-    return s;
+    return out;
   }
 
   public static int getProtocolVersion() {
@@ -32,8 +35,8 @@ public class StudioBuildInfo {
 
   public static int[] getBuildInfo() {
     try {
-      String s = getVersion();
-      String[] splits = s.split("[.]+");
+      String out = getVersion();
+      String[] splits = out.split("[.]+");
       int[] rev = new int[3];
       for (int i = 0; i < 3; i++) {
         rev[i] = new Integer(splits[i]);
@@ -42,49 +45,53 @@ public class StudioBuildInfo {
     } catch (NumberFormatException e) {
       return new int[]{0, 0, 0};
     }
-
   }
 
   private static String getTag(String target) {
     try {
-      StringBuilder s = new StringBuilder();
-      InputStream is = getBuildPropertiesStream();
-      BufferedReader br = new BufferedReader(new InputStreamReader(is));
+      StringBuilder out = new StringBuilder();
+      InputStream inputStream = getBuildPropertiesStream();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
       String line;
       try {
-        while (null != (line = br.readLine())) {
-          s.append(line).append("\n");
+        while (null != (line = reader.readLine())) {
+          out.append(line).append("\n");
         }
-      } catch (IOException ignored) {
+      } catch (IOException e) {
+        LoggerUtilities.getLogger().log(Level.WARNING,
+            "Could not write line.\n" + Throwables.getStackTraceAsString(e));
       }
 
-      String[] splitAll = s.toString().split("[\n]+");
-      for (String aSplitAll : splitAll) {
-        if (aSplitAll.contains(target)) {
-          String[] split = aSplitAll.split("[=]+");
+      String[] splitAll = out.toString().split("[\n]+");
+      for (String elem : splitAll) {
+        if (elem.contains(target)) {
+          String[] split = elem.split("[=]+");
           return split[1];
         }
       }
     } catch (NullPointerException e) {
-      return null;
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Could not split string.\n" + Throwables.getStackTraceAsString(e));
     }
     return null;
   }
 
   public static String getBuildDate() {
-    String s = "";
-    InputStream is = StudioBuildInfo.class
-        .getResourceAsStream("/META-INF/MANIFEST.MF");
+    StringBuilder builder = new StringBuilder();
+    InputStream is = StudioBuildInfo.class.getResourceAsStream("/META-INF/MANIFEST.MF");
     BufferedReader br = new BufferedReader(new InputStreamReader(is));
     String line;
+
     try {
       while (null != (line = br.readLine())) {
-        s += line + "\n";
+        builder.append(line).append("\n");
       }
-    } catch (IOException ignored) {
+    } catch (IOException e) {
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Could not append to string.\n" + Throwables.getStackTraceAsString(e));
     }
-    // System.out.println("Manifest:\n"+s);
+
     return "";
   }
 
@@ -124,8 +131,8 @@ public class StudioBuildInfo {
     return baseBuildInfoClass;
   }
 
-  public static void setBaseBuildInfoClass(Class c) {
-    baseBuildInfoClass = c;
+  public static void setBaseBuildInfoClass(Class baseClass) {
+    baseBuildInfoClass = baseClass;
   }
 
   public static String getName() {

@@ -13,7 +13,7 @@ import javax.media.protocol.PullBufferStream;
  */
 class ImageDataSource extends PullBufferDataSource {
 
-  private ImageSourceStream streams[];
+  private ImageSourceStream[] streams;
 
   ImageDataSource(int width, int height, int frameRate, Vector images) {
     streams = new ImageSourceStream[1];
