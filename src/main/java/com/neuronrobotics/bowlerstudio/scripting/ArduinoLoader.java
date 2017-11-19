@@ -1,10 +1,12 @@
 package com.neuronrobotics.bowlerstudio.scripting;
 
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 public class ArduinoLoader implements IScriptingLanguage {
 
@@ -23,30 +25,33 @@ public class ArduinoLoader implements IScriptingLanguage {
   }
 
   public static void run(String execString) throws Exception {
-    System.out.println("Running:\n" + execString);
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "Running:\n" + execString);
+
     // Get runtime
-    java.lang.Runtime rt = java.lang.Runtime.getRuntime();
+    java.lang.Runtime runtime = java.lang.Runtime.getRuntime();
     // Start a new process
-    java.lang.Process p = rt.exec(execString);
+    java.lang.Process process = runtime.exec(execString);
     // You can or maybe should wait for the process to complete
-    p.waitFor();
+    process.waitFor();
     // Get process' output: its InputStream
-    java.io.InputStream is = p.getInputStream();
-    java.io.InputStream err = p.getInputStream();
-    java.io.BufferedReader reader = new java.io.BufferedReader(new InputStreamReader(is));
+    java.io.InputStream inputStream = process.getInputStream();
+    java.io.InputStream err = process.getInputStream();
+    java.io.BufferedReader reader = new java.io.BufferedReader(new InputStreamReader(inputStream));
     java.io.BufferedReader readerErr = new java.io.BufferedReader(new InputStreamReader(err));
 
     // And print each line
-    String s = null;
-    while ((s = reader.readLine()) != null) {
-      System.out.println(s);// This is how the scripts output to the print stream
+    String line;
+    while ((line = reader.readLine()) != null) {
+      //TODO: Can the logger be used here?
+      System.out.println(line);// This is how the scripts output to the print stream
     }
 
-    s = null;
-    while ((s = readerErr.readLine()) != null) {
-      System.out.println(s);// This is how the scripts output to the print stream
+    while ((line = readerErr.readLine()) != null) {
+      //TODO: Can the logger be used here?
+      System.out.println(line);// This is how the scripts output to the print stream
     }
-    is.close();
+    inputStream.close();
     err.close();
   }
 
@@ -70,8 +75,8 @@ public class ArduinoLoader implements IScriptingLanguage {
     return ARDUINO;
   }
 
-  public static void setARDUINOExec(String aRDUINO) {
-    ARDUINO = aRDUINO;
+  public static void setARDUINOExec(String arduino) {
+    ARDUINO = arduino;
   }
 
   @SuppressWarnings("unchecked")

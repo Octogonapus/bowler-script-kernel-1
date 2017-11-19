@@ -6,7 +6,6 @@ import java.util.ArrayList;
 /**
  * Adding additional language support to bowler studio THis interface is for adding new scripting
  * languages Add the new langauge in the Static declaration of ScriptingEngine or dynamically via:
- * <p>
  * ScriptingEngine.addScriptingLanguage(new IScriptingLanguage());
  *
  * @author hephaestus

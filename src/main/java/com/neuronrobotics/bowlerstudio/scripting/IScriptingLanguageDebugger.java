@@ -9,9 +9,9 @@ public interface IScriptingLanguageDebugger {
    * compiled to
    * a DebugScriptRunner object that manages runtime.
    *
-   * @param f the file to be debugged
+   * @param file the file to be debugged
    * @return the debugger instance
    */
-  IDebugScriptRunner compileDebug(File f);
+  IDebugScriptRunner compileDebug(File file);
 
 }

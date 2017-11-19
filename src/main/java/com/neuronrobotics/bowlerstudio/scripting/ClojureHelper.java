@@ -9,10 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Class containing static utility methods for Java to Clojure interop
+ * Class containing static utility methods for Java to Clojure interop.
  *
- * @author Mike https://github.com/mikera/clojure-utils/blob/master/src/main/java/mikera/cljutils
- * /Clojure.java
+ * @author Mikera clojure-utils
  */
 public class ClojureHelper implements IScriptingLanguage {
 
@@ -23,7 +22,6 @@ public class ClojureHelper implements IScriptingLanguage {
 
   /**
    * Require a namespace by name, loading it if necessary.
-   * <p>
    * Calls clojure.core/require
    *
    * @param nsName
@@ -33,13 +31,12 @@ public class ClojureHelper implements IScriptingLanguage {
     return REQUIRE.invoke(Symbol.intern(nsName));
   }
 
-  public static Object readString(String s) {
-    return READ_STRING.invoke(s);
+  public static Object readString(String string) {
+    return READ_STRING.invoke(string);
   }
 
   /**
    * Looks up a var by name in the clojure.core namespace.
-   * <p>
    * The var can subsequently be invoked if it is a function.
    *
    * @param varName
@@ -51,7 +48,6 @@ public class ClojureHelper implements IScriptingLanguage {
 
   /**
    * Looks up a var by name in the given namespace.
-   * <p>
    * The var can subsequently be invoked if it is a function.
    *
    * @param nsName

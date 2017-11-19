@@ -76,7 +76,7 @@ public class GroovyHelper implements IScriptingLanguage, IScriptingLanguageDebug
   }
 
   @Override
-  public IDebugScriptRunner compileDebug(File f) {
+  public IDebugScriptRunner compileDebug(File file) {
     return () -> new String[]{"fileame.groovy", "345"};
   }
 

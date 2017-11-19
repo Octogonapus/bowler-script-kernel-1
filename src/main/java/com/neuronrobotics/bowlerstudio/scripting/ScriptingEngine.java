@@ -1,6 +1,7 @@
 package com.neuronrobotics.bowlerstudio.scripting;
 
-import com.neuronrobotics.sdk.common.Log;
+import com.google.common.base.Throwables;
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.sdk.util.ThreadUtil;
 import eu.mihosoft.vrl.v3d.parametrics.CSGDatabase;
 import java.io.BufferedReader;
@@ -24,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.logging.Level;
 import javafx.scene.web.WebEngine;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -104,7 +105,7 @@ public class ScriptingEngine {
   private static File workspace;
   private static File lastFile;
   private static String loginID = null;
-  private static String pw = null;
+  private static String password = null;
   private static CredentialsProvider cp;
   private static ArrayList<IGithubLoginListener> loginListeners = new ArrayList<>();
 
@@ -117,32 +118,36 @@ public class ScriptingEngine {
       username = "";
     }
 
-    String[] creds = new String[]{"", ""};
-    System.out.println("#Github Login Prompt#");
-    System.out.println("For anynomous mode hit enter twice");
-    System.out.print("Github Username: (" + username + ")");
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "#Github Login Prompt#\n"
+            + "For anonymous mode, hit enter twice.\n"
+            + "Github Username: (" + username + ")");
     // create a scanner so we can read the command-line input
     BufferedReader buf = new BufferedReader(new InputStreamReader(System.in));
 
+    String[] creds = new String[]{"", ""};
     do {
       try {
         creds[0] = buf.readLine();
       } catch (IOException e) {
         return null;
       }
-      if ("".equals(creds[0]) && "".equals(username)) {
-        System.out.println("No username, using anynomous login");
+      if ("" .equals(creds[0]) && "" .equals(username)) {
+        LoggerUtilities.getLogger().log(Level.INFO,
+            "No username, using anonymous login.");
         return null;
       } else {
         creds[0] = username;
       }
     } while (creds[0] == null);
 
-    System.out.print("Github Password: ");
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "Github password: ");
     try {
       creds[1] = buf.readLine();
-      if ("".equals(creds[1])) {
-        System.out.println("No password, using anynomous login");
+      if ("" .equals(creds[1])) {
+        LoggerUtilities.getLogger().log(Level.INFO,
+            "No username, using anonymous login.");
       }
     } catch (IOException e) {
       return null;
@@ -235,17 +240,17 @@ public class ScriptingEngine {
             loginID = line.split("=")[1];
           }
           if (line.startsWith("password")) {
-            pw = line.split("=")[1];
+            password = line.split("=")[1];
           }
         }
 
-        if (pw != null && loginID != null) {
+        if (password != null && loginID != null) {
           // password loaded, we can now autoupdate
           ScriptingEngine.setAutoupdate(true);
         }
 
         if (cp == null) {
-          cp = new UsernamePasswordCredentialsProvider(loginID, pw);
+          cp = new UsernamePasswordCredentialsProvider(loginID, password);
         }
       } catch (Exception e) {
         logout();
@@ -258,15 +263,15 @@ public class ScriptingEngine {
     langauges.put(lang.getShellType(), lang);
   }
 
-  public static void addIGithubLoginListener(IGithubLoginListener l) {
-    if (!loginListeners.contains(l)) {
-      loginListeners.add(l);
+  public static void addIGithubLoginListener(IGithubLoginListener listener) {
+    if (!loginListeners.contains(listener)) {
+      loginListeners.add(listener);
     }
   }
 
-  public static void removeIGithubLoginListener(IGithubLoginListener l) {
-    if (loginListeners.contains(l)) {
-      loginListeners.remove(l);
+  public static void removeIGithubLoginListener(IGithubLoginListener listener) {
+    if (loginListeners.contains(listener)) {
+      loginListeners.remove(listener);
     }
   }
 
@@ -304,15 +309,16 @@ public class ScriptingEngine {
     }
 
     setGithub(null);
-    for (IGithubLoginListener l : loginListeners) {
-      l.onLogout(loginID);
+    for (IGithubLoginListener listener : loginListeners) {
+      listener.onLogout(loginID);
     }
 
     loginID = null;
   }
 
   public static GitHub setupAnyonmous() throws IOException {
-    System.err.println("Using anynomous login, autoupdate disabled");
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "Using anonymous login, autoupdate disabled.");
     ScriptingEngine.setAutoupdate(false);
     logout();
 
@@ -332,15 +338,16 @@ public class ScriptingEngine {
     if (tokens[0].toLowerCase().contains("gist.github.com") && tokens.length >= 2) {
       try {
         String id = tokens[2].split("#")[0];
-        Log.debug("Gist URL Detected " + id);
+        LoggerUtilities.getLogger().log(Level.INFO, "Gist URL detected: " + id);
         return id;
       } catch (ArrayIndexOutOfBoundsException e) {
         try {
           String id = tokens[1].split("#")[0];
-          Log.debug("Gist URL Detected " + id);
+          LoggerUtilities.getLogger().log(Level.INFO, "Gist URL detected: " + id);
           return id;
         } catch (ArrayIndexOutOfBoundsException ex) {
-          Log.error("Parsing " + in + " failed to find gist");
+          LoggerUtilities.getLogger().log(Level.INFO,
+              "Parsing " + in + " failed to find gist");
           return "d4312a0787456ec27a2a";
         }
       }
@@ -373,7 +380,7 @@ public class ScriptingEngine {
 
     if (gist == null) {
       try {
-        Log.debug("Non Gist URL Detected");
+        LoggerUtilities.getLogger().log(Level.INFO, "Non-Gist URL detected.");
 
         String html;
         TransformerFactory tf = TransformerFactory.newInstance();
@@ -384,10 +391,10 @@ public class ScriptingEngine {
         html = sw.getBuffer().toString();
 
         return returnFirstGist(html);
-      } catch (TransformerConfigurationException e) {
-        e.printStackTrace();
       } catch (TransformerException e) {
-        e.printStackTrace();
+        LoggerUtilities.getLogger().log(Level.WARNING,
+            "Could not make a new instance of TransformerFactory.\n"
+                + Throwables.getStackTraceAsString(e));
       }
     }
 
@@ -403,20 +410,22 @@ public class ScriptingEngine {
       return setupAnyonmous();
     } else {
       if (creds[0].contains("@")) {
-        System.err.print("###ERROR Enter the Username not the Email Address### ");
+        LoggerUtilities.getLogger().log(Level.WARNING,
+            "###ERROR Enter the Username not the Email Address###");
         return gitHubLogin();
       }
-      if ("".equals(creds[0]) || "".equals(creds[1])) {
-        System.err.print("###No Username or password### ");
+      if ("" .equals(creds[0]) || "" .equals(creds[1])) {
+        LoggerUtilities.getLogger().log(Level.WARNING,
+            "###No Username or password###");
         return setupAnyonmous();
       }
     }
 
     loginID = creds[0];
-    pw = creds[1];
+    password = creds[1];
 
     String content = "login=" + loginID + "\n";
-    content += "password=" + pw + "\n";
+    content += "password=" + password + "\n";
     PrintWriter out;
     try {
       out = new PrintWriter(getCreds().getAbsoluteFile());
@@ -425,8 +434,8 @@ public class ScriptingEngine {
       out.close();
       runLogin();
     } catch (Exception e) {
-      e.printStackTrace();
-      System.out.println("Login failed");
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Login failed");
       setGithub(null);
     }
 
@@ -442,16 +451,18 @@ public class ScriptingEngine {
     setGithub(GitHub.connect());
 
     if (getGithub().isCredentialValid()) {
-      cp = new UsernamePasswordCredentialsProvider(loginID, pw);
+      cp = new UsernamePasswordCredentialsProvider(loginID, password);
       for (IGithubLoginListener l : loginListeners) {
         l.onLogin(loginID);
       }
-      System.out.println("Success Login as " + loginID + "");
+      LoggerUtilities.getLogger().log(Level.INFO,
+          "Success Login as " + loginID);
       setLoginSuccess(true);
     } else {
-      System.err.println("Bad login credentials for " + loginID);
+      LoggerUtilities.getLogger().log(Level.INFO,
+          "Bad login credentials for " + loginID);
       setGithub(null);
-      pw = null;
+      password = null;
     }
   }
 
@@ -480,7 +491,8 @@ public class ScriptingEngine {
 
     try {
       if (getGithub().getRateLimit().remaining < 2) {
-        System.err.println("##Github Is Rate Limiting You## Disabling autoupdate");
+        LoggerUtilities.getLogger().log(Level.INFO,
+            "##Github Is Rate Limiting You## Disabling autoupdate");
         setAutoupdate(false);
       }
     } catch (IOException e) {
@@ -508,16 +520,16 @@ public class ScriptingEngine {
     }
   }
 
-  private static void loadFilesToList(ArrayList<String> f, File directory, String extnetion) {
+  private static void loadFilesToList(ArrayList<String> files, File directory, String extension) {
     for (final File fileEntry : directory.listFiles()) {
       if (fileEntry.getName().endsWith(".git") ||
           fileEntry.getName().startsWith(".git")) {
         continue;// ignore git files
       }
 
-      if (extnetion != null) {
-        if (extnetion.length() > 0) {
-          if (!fileEntry.getName().endsWith(extnetion)) {
+      if (extension != null) {
+        if (extension.length() > 0) {
+          if (!fileEntry.getName().endsWith(extension)) {
             continue;// skip this file as it fails the filter
           }
         }
@@ -525,11 +537,11 @@ public class ScriptingEngine {
 
       // from the user
       if (fileEntry.isDirectory()) {
-        loadFilesToList(f, fileEntry, extnetion);
+        loadFilesToList(files, fileEntry, extension);
       } else {
         for (IScriptingLanguage l : langauges.values()) {
           if (l.isSupportedFileExtenetion(fileEntry.getName())) {
-            f.add(findLocalPath(fileEntry));
+            files.add(findLocalPath(fileEntry));
             break;
           }
         }
@@ -540,13 +552,13 @@ public class ScriptingEngine {
   public static ArrayList<String> filesInGit(String remote,
                                              String branch,
                                              String extension) throws Exception {
-    ArrayList<String> f = new ArrayList<>();
+    ArrayList<String> files = new ArrayList<>();
 
     waitForLogin();
     File gistDir = cloneRepo(remote, branch);
-    loadFilesToList(f, gistDir, extension);
+    loadFilesToList(files, gistDir, extension);
 
-    return f;
+    return files;
 
   }
 
@@ -556,10 +568,10 @@ public class ScriptingEngine {
 
   public static String getUserIdOfGist(String id) throws Exception {
     waitForLogin();
-    Log.debug("Loading Gist: " + id);
-    GHGist gist;
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "Loading Gist: " + id);
 
-    gist = getGithub().getGist(id);
+    GHGist gist = getGithub().getGist(id);
     return gist.getOwner().getLogin();
   }
 
@@ -652,15 +664,15 @@ public class ScriptingEngine {
               CSGDatabase.setDbFile(dbFile);
             }
             CSGDatabase.saveDatabase();
-            @SuppressWarnings("resource")
-            String c = new Scanner(dbFile).useDelimiter("\\Z").next();
-            ScriptingEngine.commit(remoteURI, branch, s, c, "saving CSG database", false);
+            String next = new Scanner(dbFile).useDelimiter("\\Z").next();
+            ScriptingEngine.commit(remoteURI, branch, s, next, "saving CSG database", false);
           }
         }
       }
     } catch (Exception e) {
       //ignore CSG database
-      e.printStackTrace();
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Exception in commit.\n" + Throwables.getStackTraceAsString(e));
     }
   }
 
@@ -680,7 +692,6 @@ public class ScriptingEngine {
     File desired = new File(gistDir.getAbsoluteFile() + "/" + FileName);
 
     if (!hasnetwork && content != null) {
-      OutputStream out = null;
       overwriteFileWithString(desired, content);
       return;
     }
@@ -701,7 +712,8 @@ public class ScriptingEngine {
       overwriteFileWithString(desired, content);
       git.push().setCredentialsProvider(cp).call();
 
-      System.out.println("PUSH OK! file: " + desired);
+      LoggerUtilities.getLogger().log(Level.INFO,
+          "PUSH OK! file: " + desired);
     } catch (Exception ex) {
       String[] gitID = ScriptingEngine.findGitTagFromFile(desired);
       String remoteURI = gitID[0];
@@ -745,7 +757,8 @@ public class ScriptingEngine {
     File targetFile = fileFromGit(giturl, FileName);
 
     if (targetFile.exists()) {
-      System.err.println("Gist at GIT : " + giturl);
+      LoggerUtilities.getLogger().log(Level.INFO,
+          "Gist at GIT : " + giturl);
       // Target file is ready to go
       String text = new String(Files.readAllBytes(Paths.get(targetFile.getAbsolutePath())),
           StandardCharsets.UTF_8);
@@ -798,7 +811,7 @@ public class ScriptingEngine {
       if (isAutoupdate()) {
         try {
           if (cp == null) {
-            cp = new UsernamePasswordCredentialsProvider(loginID, pw);
+            cp = new UsernamePasswordCredentialsProvider(loginID, password);
           }
 
           Repository localRepo = new FileRepository(gitRepoFile.getAbsoluteFile() + "/.git");
@@ -807,13 +820,16 @@ public class ScriptingEngine {
           try {
             PullResult ret = git.pull().setCredentialsProvider(cp).call();
             git.close();
-          } catch (Exception ex) {
+          } catch (Exception e) {
             try {
-              ex.printStackTrace();
-              System.err.println("Error in gist, hosing: " + gitRepoFile);
+              LoggerUtilities.getLogger().log(Level.WARNING,
+                  "Error ing gist, hosing: " + gitRepoFile
+                      + ".\n" + Throwables.getStackTraceAsString(e));
               FileUtils.deleteDirectory(gitRepoFile);
-            } catch (Exception x) {
-              x.printStackTrace();
+            } catch (IOException ex) {
+              LoggerUtilities.getLogger().log(Level.WARNING,
+                  "Could not delete: " + gitRepoFile
+                      + ".\n" + Throwables.getStackTraceAsString(ex));
             }
           }
 
@@ -828,17 +844,12 @@ public class ScriptingEngine {
   }
 
   public static File uriToFile(String remoteURI) {
-    // new Exception().printStackTrace();
     String[] colinSplit = remoteURI.split(":");
-
     String gitSplit = colinSplit[1].substring(0, colinSplit[1].lastIndexOf('.'));
-
-    File gistDir = new File(getWorkspace().getAbsolutePath() + "/gitcache/" + gitSplit + "/.git");
-    return gistDir;
+    return new File(getWorkspace().getAbsolutePath() + "/gitcache/" + gitSplit + "/.git");
   }
 
   public static String getBranch(String remoteURI) throws IOException {
-
     File gitRepoFile = uriToFile(remoteURI);
     if (!gitRepoFile.exists()) {
       gitRepoFile = cloneRepo(remoteURI, null);
@@ -852,7 +863,6 @@ public class ScriptingEngine {
   }
 
   public static String getFullBranch(String remoteURI) throws IOException {
-
     File gitRepoFile = uriToFile(remoteURI);
     if (!gitRepoFile.exists()) {
       gitRepoFile = cloneRepo(remoteURI, null);
@@ -872,6 +882,7 @@ public class ScriptingEngine {
         found = true;
       }
     }
+
     if (!found) {
       throw new RuntimeException(toDelete + " can not be deleted because it does not exist");
     }
@@ -882,20 +893,15 @@ public class ScriptingEngine {
     }
 
     Repository localRepo = new FileRepository(gitRepoFile.getAbsoluteFile());
-    // CreateBranchCommand bcc = null;
-    // CheckoutCommand checkout;
-    // String source = getFullBranch(remoteURI);
-
-    Git git;
-
-    git = new Git(localRepo);
+    Git git = new Git(localRepo);
     if (!toDelete.contains("heads")) {
       toDelete = "heads/" + toDelete;
     }
     if (!toDelete.contains("refs")) {
       toDelete = "refs/" + toDelete;
     }
-    Exception ex = null;
+
+    Exception ex = null; //TODO: What is happening here
     try {
       // delete branch 'branchToDelete' locally
       git.branchDelete().setBranchNames(toDelete).call();
@@ -906,6 +912,7 @@ public class ScriptingEngine {
     } catch (Exception e) {
       ex = e;
     }
+
     git.close();
     if (ex != null) {
       throw ex;
@@ -913,10 +920,10 @@ public class ScriptingEngine {
   }
 
   public static void newBranch(String remoteURI, String newBranch) throws Exception {
-    for (String s : listBranchNames(remoteURI)) {
-      if (s.contains(newBranch)) {
-        throw new RuntimeException(
-            newBranch + " can not be created because " + s + " is to similar");
+    for (String string : listBranchNames(remoteURI)) {
+      if (string.contains(newBranch)) {
+        throw new RuntimeException(newBranch + " can not be created because "
+            + string + " is to similar");
       }
     }
 
@@ -926,27 +933,21 @@ public class ScriptingEngine {
     }
 
     Repository localRepo = new FileRepository(gitRepoFile.getAbsoluteFile());
-    CreateBranchCommand bcc = null;
-    CheckoutCommand checkout;
     String source = getFullBranch(remoteURI);
-
-    Git git;
-
-    git = new Git(localRepo);
-
-    bcc = git.branchCreate();
-    checkout = git.checkout();
+    Git git = new Git(localRepo);
+    CreateBranchCommand bcc = git.branchCreate();
+    CheckoutCommand checkout = git.checkout();
     bcc.setName(newBranch).setStartPoint(source).setForce(true).call();
 
     checkout.setName(newBranch);
     checkout.call();
     PushCommand pushCommand = git.push();
-    pushCommand.setRemote("origin").setRefSpecs(new RefSpec(
-        newBranch + ":" + newBranch)).setCredentialsProvider(cp)
-        .call();
+    pushCommand
+        .setRemote("origin")
+        .setRefSpecs(new RefSpec(newBranch + ":" + newBranch))
+        .setCredentialsProvider(cp).call();
 
     git.close();
-
   }
 
   private static boolean hasAtLeastOneReference(Git git) throws Exception {
@@ -954,24 +955,25 @@ public class ScriptingEngine {
     Config storedConfig = repo.getConfig();
     Set<String> uriList = repo.getConfig().getSubsections("remote");
     String remoteURI = null;
+
     for (String remoteName : uriList) {
       if (remoteURI == null) {
         remoteURI = storedConfig.getString("remote", remoteName, "url");
       }
     }
+
     long startTime = System.currentTimeMillis();
     while (System.currentTimeMillis() < (startTime + 2000)) {
       for (Ref ref : repo.getAllRefs().values()) {
         if (ref.getObjectId() != null) {
           List<Ref> branchList = listBranches(remoteURI, git);
           if (branchList.size() > 0) {
-            // System.out.println("Found "+branchList.size()+"
-            // branches");
             return true;
           }
         }
       }
     }
+
     throw new RuntimeException("No references or branches found!");
   }
 
@@ -979,7 +981,7 @@ public class ScriptingEngine {
     File gitRepoFile = uriToFile(remoteURI);
 
     if (!gitRepoFile.exists()) {
-      gitRepoFile = cloneRepo(remoteURI, null);
+      gitRepoFile = cloneRepo(remoteURI, null); //TODO: Not used?
       return listBranches(remoteURI);
     }
 
@@ -1048,7 +1050,8 @@ public class ScriptingEngine {
     File gitRepoFile = ScriptingEngine.uriToFile(remoteURI);
 
     if (!gitRepoFile.exists() || !gitRepoFile.getAbsolutePath().endsWith(".git")) {
-      System.err.println("Invailid git file!" + gitRepoFile.getAbsolutePath());
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Invalid git file: " + gitRepoFile.getAbsolutePath());
       throw new RuntimeException("Invailid git file!" + gitRepoFile.getAbsolutePath());
     }
 
@@ -1069,7 +1072,8 @@ public class ScriptingEngine {
     File gitRepoFile = uriToFile(remoteURI);
 
     if (!gitRepoFile.exists() || !gitRepoFile.getAbsolutePath().endsWith(".git")) {
-      System.err.println("Invailid git file!" + gitRepoFile.getAbsolutePath());
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Invalid git file: " + gitRepoFile.getAbsolutePath());
       throw new RuntimeException("Invailid git file!" + gitRepoFile.getAbsolutePath());
     }
 
@@ -1087,8 +1091,10 @@ public class ScriptingEngine {
               .setStartPoint("origin/" + branch)
               .call();
           git.checkout().setName(branch).call();
-        } catch (Exception ex) {
-          ex.printStackTrace();
+        } catch (Exception e) {
+          LoggerUtilities.getLogger().log(Level.WARNING,
+              "Could not checkout file: " + gitRepoFile.getAbsolutePath()
+                  + ".\n" + Throwables.getStackTraceAsString(e));
         }
       }
 
@@ -1118,11 +1124,13 @@ public class ScriptingEngine {
     File dir = new File(localPath);
 
     if (!gitRepoFile.exists()) {
-      System.out.println("Cloning files from: " + remoteURI);
+      LoggerUtilities.getLogger().log(Level.INFO, "Cloning files from: " + remoteURI);
+
       if (branch != null) {
-        System.out.println("            branch: " + branch);
+        LoggerUtilities.getLogger().log(Level.INFO, "            branch: " + branch);
       }
-      System.out.println("                to: " + localPath);
+
+      LoggerUtilities.getLogger().log(Level.INFO, "                to: " + localPath);
 
       for (int i = 0; i < 5; i++) {
         // Clone the repo
@@ -1154,8 +1162,8 @@ public class ScriptingEngine {
           }
           break;
         } catch (Exception e) {
-          Log.error("Failed to clone " + remoteURI + " " + e);
-          e.printStackTrace();
+          LoggerUtilities.getLogger().log(Level.WARNING,
+              "Failed to clone " + remoteURI + ".\n" + Throwables.getStackTraceAsString(e));
 
           try {
             FileUtils.deleteDirectory(new File(localPath));
@@ -1163,6 +1171,7 @@ public class ScriptingEngine {
             e1.printStackTrace();
           }
         }
+
         ThreadUtil.wait(200 * i);
       }
     }
@@ -1171,15 +1180,17 @@ public class ScriptingEngine {
       try {
         checkout(remoteURI, branch);
       } catch (IOException e) {
-        e.printStackTrace();
+        LoggerUtilities.getLogger().log(Level.WARNING,
+            "Could not checkout: " + remoteURI + "/" + branch
+                + ".\n" + Throwables.getStackTraceAsString(e));
       }
     }
 
     return gistDir;
   }
 
-  public static Git locateGit(File f) throws IOException {
-    File gitRepoFile = f;
+  public static Git locateGit(File file) throws IOException {
+    File gitRepoFile = file;
 
     while (gitRepoFile != null) {
       gitRepoFile = gitRepoFile.getParentFile();
@@ -1195,15 +1206,15 @@ public class ScriptingEngine {
 
   public static String getText(URL website) throws Exception {
     URLConnection connection = website.openConnection();
-    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
     StringBuilder response = new StringBuilder();
     String inputLine;
 
-    while ((inputLine = in.readLine()) != null) {
+    while ((inputLine = reader.readLine()) != null) {
       response.append(inputLine).append("\n");
     }
 
-    in.close();
+    reader.close();
     return response.toString();
   }
 
@@ -1256,11 +1267,11 @@ public class ScriptingEngine {
       ScriptingEngine.autoupdate = true; //prevents recursion loop from calling loadLoginData
       loadLoginData();
 
-      if (pw == null || loginID == null) {
+      if (password == null || loginID == null) {
         login();
       }
 
-      if (pw == null || loginID == null) {
+      if (password == null || loginID == null) {
         return false;
       }
     }
@@ -1269,9 +1280,9 @@ public class ScriptingEngine {
     return ScriptingEngine.autoupdate;
   }
 
-  private static File fileFromGistID(String string,
-                                     String string2) throws GitAPIException, IOException {
-    return fileFromGit("https://gist.github.com/" + string + ".git", string2);
+  private static File fileFromGistID(String remoteURI,
+                                     String branch) throws GitAPIException, IOException {
+    return fileFromGit("https://gist.github.com/" + remoteURI + ".git", branch);
   }
 
   public static String findLocalPath(File currentFile, Git git) {
@@ -1286,7 +1297,9 @@ public class ScriptingEngine {
       git = locateGit(currentFile);
       return findLocalPath(currentFile, git);
     } catch (IOException e) {
-      e.printStackTrace();
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Could not locate git for file: " + currentFile.getAbsolutePath()
+              + ".\n" + Throwables.getStackTraceAsString(e));
     }
 
     return currentFile.getName();
@@ -1321,8 +1334,8 @@ public class ScriptingEngine {
       waitForLogin();
       GHGist incoming = getGithub().getGist(currentGist);
 
-      for (IGithubLoginListener l : loginListeners) {
-        l.onLogin(loginID);
+      for (IGithubLoginListener listener : loginListeners) {
+        listener.onLogin(loginID);
       }
 
       return incoming.fork();
@@ -1350,11 +1363,11 @@ public class ScriptingEngine {
       incoming[0] = "https://gist.github.com/"
           + ScriptingEngine.urlToGist(incomingGist.getHtmlUrl()) + ".git";
       // sync the new file to the disk
-      incomingFile = ScriptingEngine.fileFromGistID(id, incoming[1]);
+      incomingFile = ScriptingEngine.fileFromGistID(id, incoming[1]); //TODO: Not used?
     }
 
-    for (IGithubLoginListener l : loginListeners) {
-      l.onLogin(loginID);
+    for (IGithubLoginListener listener : loginListeners) {
+      listener.onLogin(loginID);
     }
 
     return incoming;
