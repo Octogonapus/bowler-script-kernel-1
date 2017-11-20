@@ -1,5 +1,6 @@
 package com.neuronrobotics.bowlerstudio.physics;
 
+import com.bulletphysics.linearmath.Transform;
 import com.neuronrobotics.sdk.addons.kinematics.math.RotationNR;
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR;
 import javafx.scene.transform.Affine;
@@ -13,6 +14,12 @@ import javax.vecmath.Vector3d;
  */
 public class TransformFactory extends com.neuronrobotics.sdk.addons.kinematics.TransformFactory {
 
+  /**
+   * TransformNR to BulletPhysics linearmath transform.
+   *
+   * @param nr Source
+   * @param bullet Target
+   */
   public static void nrToBullet(TransformNR nr, com.bulletphysics.linearmath.Transform bullet) {
     bullet.origin.set(
         (float) nr.getX(),
@@ -25,6 +32,12 @@ public class TransformFactory extends com.neuronrobotics.sdk.addons.kinematics.T
         (float) nr.getRotation().getRotationMatrix2QuaturnionW()));
   }
 
+  /**
+   * BulletPhysics linearmath transform to TransformNR
+   *
+   * @param bullet Source
+   * @return Target
+   */
   public static TransformNR bulletToNr(com.bulletphysics.linearmath.Transform bullet) {
     Quat4f out = new Quat4f();
     bullet.getRotation(out);
@@ -33,7 +46,13 @@ public class TransformFactory extends com.neuronrobotics.sdk.addons.kinematics.T
         bullet.origin.z, out.w, out.x, out.y, out.z);
   }
 
-  public static void bulletToAffine(Affine affine, com.bulletphysics.linearmath.Transform bullet) {
+  /**
+   * BulletPhysics linearmath transform to Affine
+   *
+   * @param bullet Source
+   * @param affine Target
+   */
+  public static void bulletToAffine(Transform bullet, Affine affine) {
 
     //synchronized(out){
     double[][] vals = bulletToNr(bullet).getRotationMatrix().getRotationMatrix();
@@ -56,11 +75,23 @@ public class TransformFactory extends com.neuronrobotics.sdk.addons.kinematics.T
     affine.setTz(bullet.origin.z);
   }
 
+  /**
+   * Transform Affine to BulletPhysics linearmath transform.
+   *
+   * @param affine Source
+   * @param bullet Target
+   */
   public static void affineToBullet(Affine affine, com.bulletphysics.linearmath.Transform bullet) {
     TransformNR nr = affineToNr(affine);
     nrToBullet(nr, bullet);
   }
 
+  /**
+   * Transform TransformNR to CSG Transform
+   *
+   * @param nr Source
+   * @return Target
+   */
   public static eu.mihosoft.vrl.v3d.Transform nrToCSG(TransformNR nr) {
     Quat4d q1 = new Quat4d();
     q1.w = nr.getRotation().getRotationMatrix2QuaturnionW();
@@ -76,6 +107,12 @@ public class TransformFactory extends com.neuronrobotics.sdk.addons.kinematics.T
     return new eu.mihosoft.vrl.v3d.Transform(rotation);
   }
 
+  /**
+   * Transform CSG transform to TransformNR
+   *
+   * @param csg Source
+   * @return Target
+   */
   public static TransformNR csgToNR(eu.mihosoft.vrl.v3d.Transform csg) {
     Matrix4d rotation = csg.getInternalMatrix();
     Quat4d q1 = new Quat4d();

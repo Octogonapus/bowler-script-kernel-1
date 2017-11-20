@@ -31,7 +31,7 @@ public class VehicleCSGPhysicsManager extends CSGPhysicsManager {
         getUpdateManager().update(timeStep);
       } catch (Exception e) {
         //BowlerStudio.printStackTrace(e);
-        throw e;
+        throw e; //TODO: ?
       }
     }
     vehicle.updateVehicle(timeStep);

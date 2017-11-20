@@ -74,6 +74,8 @@ public class BowlerKernel {
   }
 
   /**
+   * Start the REPL.
+   *
    * @param args The command line arguments
    */
   public static void main(String[] args) throws Exception {
@@ -231,7 +233,7 @@ public class BowlerKernel {
   }
 
   /**
-   * Load history from the history file
+   * Load history from the history file.
    *
    * @return History
    * @throws IOException FileReader IOException

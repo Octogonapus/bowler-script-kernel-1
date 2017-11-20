@@ -92,7 +92,7 @@ public class StudioBuildInfo {
           "Could not append to string.\n" + Throwables.getStackTraceAsString(e));
     }
 
-    return "";
+    return ""; //TODO: builder not used?
   }
 
   private static InputStream getBuildPropertiesStream() {
@@ -135,6 +135,11 @@ public class StudioBuildInfo {
     baseBuildInfoClass = baseClass;
   }
 
+  /**
+   * Return the name with version info.
+   *
+   * @return Name with version info
+   */
   public static String getName() {
     return "Bowler Studio "
         + getProtocolVersion() + "." + getSDKVersion() + "("

@@ -1,7 +1,7 @@
 package com.neuronrobotics.bowlerstudio.physics;
 
 import eu.mihosoft.vrl.v3d.CSG;
-import java.util.ArrayList;
+import java.util.List;
 
 public class PhysicsEngine {
   private static PhysicsCore mainEngine;
@@ -30,11 +30,19 @@ public class PhysicsEngine {
     get().remove(manager);
   }
 
+  /**
+   * Delete the main physics engine.
+   */
   public static void clear() {
     get().clear();
     mainEngine = null;
   }
 
+  /**
+   * Return the main physics engine.
+   *
+   * @return Main physics engine
+   */
   public static PhysicsCore get() {
     if (mainEngine == null) {
       try {
@@ -47,7 +55,7 @@ public class PhysicsEngine {
     return mainEngine;
   }
 
-  public static ArrayList<CSG> getCsgFromEngine() {
+  public static List<CSG> getCsgFromEngine() {
     return mainEngine.getCsgFromEngine();
   }
 

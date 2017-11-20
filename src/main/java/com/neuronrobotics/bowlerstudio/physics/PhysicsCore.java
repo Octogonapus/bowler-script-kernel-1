@@ -17,6 +17,7 @@ import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.sdk.util.ThreadUtil;
 import eu.mihosoft.vrl.v3d.CSG;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import javafx.application.Platform;
 import javax.vecmath.Matrix4f;
@@ -150,6 +151,11 @@ public class PhysicsCore {
     this.objects = objects;
   }
 
+  /**
+   * Start the physics thread with a step time in ms.
+   *
+   * @param ms Step time
+   */
   public void startPhysicsThread(int ms) {
     msTime = ms;
     if (physicsThread == null) {
@@ -177,11 +183,15 @@ public class PhysicsCore {
     }
   }
 
-  public ArrayList<CSG> getCsgFromEngine() {
-    ArrayList<CSG> csg = new ArrayList<>();
-    for (IPhysicsManager physics : getPhysicsObjects()) {
-      csg.addAll(physics.getBaseCSG());
-    }
+  /**
+   * Get all CSG objects
+   * @return List of CSG objects
+   */
+  public List<CSG> getCsgFromEngine() {
+    List<CSG> csg = new ArrayList<>();
+    getPhysicsObjects().stream()
+        .map(IPhysicsManager::getBaseCSG)
+        .forEach(csg::addAll);
     return csg;
   }
 
@@ -205,8 +215,8 @@ public class PhysicsCore {
       for (IPhysicsManager physics : getPhysicsObjects()) {
         try {
           TransformFactory.bulletToAffine(
-              physics.getRigidBodyLocation(),
-              physics.getUpdateTransform());
+              physics.getUpdateTransform(), physics.getRigidBodyLocation()
+          );
         } catch (Exception e) {
           LoggerUtilities.getLogger().log(Level.WARNING,
               "Exception when transforming bullet to affine.\n"
@@ -240,6 +250,11 @@ public class PhysicsCore {
     }
   }
 
+  /**
+   * Remove rigid bodies, constraints, and vehicles for a physics manager.
+   *
+   * @param manager Physics manager
+   */
   public void remove(IPhysicsManager manager) {
     if (getPhysicsObjects().contains(manager)) {
       getPhysicsObjects().remove(manager);
@@ -260,6 +275,10 @@ public class PhysicsCore {
     }
   }
 
+  /**
+   * Stop the physics thread and remove rigid bodies, constraints, and vehicles for all physics
+   * managers.
+   */
   public void clear() {
     stopPhysicsThread();
     ThreadUtil.wait(msTime * 2);

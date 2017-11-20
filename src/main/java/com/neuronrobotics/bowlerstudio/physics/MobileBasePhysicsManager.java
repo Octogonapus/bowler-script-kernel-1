@@ -66,7 +66,7 @@ public class MobileBasePhysicsManager {
     TransformFactory.nrToBullet(base.getFiducialToGlobalTransform(), start);
     start.origin.z = (float) (start.origin.z - minz + lift);
     Platform.runLater(() ->
-        TransformFactory.bulletToAffine(baseCad.get(0).getManipulator(), start));
+        TransformFactory.bulletToAffine(start, baseCad.get(0).getManipulator()));
 
     CSGPhysicsManager baseManager =
         new CSGPhysicsManager(baseCad, start, base.getMassKg(), false, core);

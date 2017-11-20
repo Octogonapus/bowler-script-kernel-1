@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXMLLoader;
@@ -20,13 +21,31 @@ public class AssetFactory {
 
   private static final String repo = "BowlerStudioImageAssets";
   private static String gitSource = "https://github.com/madhephaestus/" + repo + ".git";
-  private static HashMap<String, Image> cache = new HashMap<>();
-  private static HashMap<String, FXMLLoader> loaders = new HashMap<>();
+  private static Map<String, Image> cache = new HashMap<>();
+  private static Map<String, FXMLLoader> loaders = new HashMap<>();
   private static String assetRepoBranch = "";
 
   private AssetFactory() {
   }
 
+  /**
+   * Load an FXML layout from a file without refreshing and return the loader.
+   *
+   * @param file File to load from
+   * @return The FXMLLoader
+   * @throws Exception Loading the file could throw
+   */
+  public static FXMLLoader loadLayout(String file) throws Exception {
+    return loadLayout(file, false);
+  }
+
+  /**
+   * Load an FXML layout from a file and return the loader.
+   * @param file File to load from
+   * @param refresh Whether the re-load a file even if it's already loaded
+   * @return The FXMLLoader
+   * @throws Exception Loading the file could throw
+   */
   public static FXMLLoader loadLayout(String file, boolean refresh) throws Exception {
     File fxmlFIle = loadFile(file);
     URL fileURL = fxmlFIle.toURI().toURL();
@@ -39,10 +58,6 @@ public class AssetFactory {
     return loaders.get(file);
   }
 
-  public static FXMLLoader loadLayout(String file) throws Exception {
-    return loadLayout(file, false);
-  }
-
   public static File loadFile(String file) throws Exception {
     return ScriptingEngine.fileFromGit(
             getGitSource(),// git repo, change this if you fork this demo
@@ -51,6 +66,13 @@ public class AssetFactory {
         );
   }
 
+  /**
+   * Load either an FXML file or an Image.
+   *
+   * @param file File to load from
+   * @return The Image or null if loading an FXML file
+   * @throws Exception Loading the file could throw
+   */
   public static Image loadAsset(String file) throws Exception {
     if (cache.get(file) == null) {
       File assetFile = loadFile(file);
@@ -96,6 +118,12 @@ public class AssetFactory {
     return cache.get(file);
   }
 
+  /**
+   * Load an icon from a file.
+   *
+   * @param file File to load from
+   * @return Icon
+   */
   public static ImageView loadIcon(String file) {
     try {
       return new ImageView(loadAsset(file));
@@ -104,7 +132,7 @@ public class AssetFactory {
     }
   }
 
-  public static String getGitSource() throws Exception {
+  public static String getGitSource() {
     return gitSource;
   }
 

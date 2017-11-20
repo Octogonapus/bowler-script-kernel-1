@@ -3,11 +3,13 @@ package com.neuronrobotics.bowlerstudio.assets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.kohsuke.github.GHMyself;
 import org.kohsuke.github.GHRepository;
 
@@ -21,27 +23,43 @@ public class ConfigurationDatabase {
   private static String gitSource = null; // madhephaestus
   private static String dbFile = "database.json";
   private static boolean checked;
-  private static HashMap<String, HashMap<String, Object>> database = null;
+  private static Map<String, HashMap<String, Object>> database = null;
   //chreat the gson object, this is the parsing factory
   private static Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
   public static Object getObject(String paramsKey, String objectKey, Object defaultValue) {
     if (getParamMap(paramsKey).get(objectKey) == null) {
-      System.err.println("Cant find: " + paramsKey + ":" + objectKey);
+      LoggerUtilities.getLogger().log(Level.WARNING,
+          "Cant find: " + paramsKey + ":" + objectKey);
       setObject(paramsKey, objectKey, defaultValue);
     }
     return getParamMap(paramsKey).get(objectKey);
   }
 
-  public static HashMap<String, Object> getParamMap(String paramsKey) {
+  public static Map<String, Object> getParamMap(String paramsKey) {
     getDatabase().computeIfAbsent(paramsKey, k -> new HashMap<>());
     return getDatabase().get(paramsKey);
   }
 
+  /**
+   * Set the value of an object in the map.
+   *
+   * @param paramsKey Key for the map
+   * @param objectKey Key for the object
+   * @param value New object
+   * @return The previous value for the object key
+   */
   public static Object setObject(String paramsKey, String objectKey, Object value) {
     return getParamMap(paramsKey).put(objectKey, value);
   }
 
+  /**
+   * Remove and object from the map.
+   *
+   * @param paramsKey Key for the map
+   * @param objectKey Key for the object
+   * @return The previous value for the object key
+   */
   public static Object removeObject(String paramsKey, String objectKey) {
     return getParamMap(paramsKey).remove(objectKey);
   }
@@ -65,7 +83,7 @@ public class ConfigurationDatabase {
   }
 
   @SuppressWarnings("unchecked")
-  public static HashMap<String, HashMap<String, Object>> getDatabase() {
+  public static Map<String, HashMap<String, Object>> getDatabase() {
     if (database != null) {
       return database;
     }
