@@ -103,12 +103,12 @@ public class Vitamins {
         servoMeasurements.add(id);
         newVitamin = (CSG) ScriptingEngine.gitScriptRun(
             script.get("scriptGit").toString(), // git location of the library
-            script.get("scriptFile").toString(), // file to load
+            script.get("scriptFile").toString(), // file to loadJNI
             servoMeasurements
         );
         return newVitamin;
       } else {
-        Log.error(key + " Failed to load from script");
+        Log.error(key + " Failed to loadJNI from script");
         return null;
       }
     } catch (Exception e) {
@@ -174,7 +174,7 @@ public class Vitamins {
       }
 
       if (exampleKey != null) {
-        // this database has examples, load an example
+        // this database has examples, loadJNI an example
         HashMap<String, Object> exampleConfiguration = getConfiguration(type, exampleKey);
         HashMap<String, Object> newConfig = getConfiguration(type, id);
         for (String key : exampleConfiguration.keySet()) {
@@ -207,7 +207,7 @@ public class Vitamins {
       String jsonString;
       InputStream inPut = null;
 
-      // attempt to load the JSON file from the GIt Repo and pars the JSON string
+      // attempt to loadJNI the JSON file from the GIt Repo and pars the JSON string
       File file;
       try {
         file = ScriptingEngine.fileFromGit(

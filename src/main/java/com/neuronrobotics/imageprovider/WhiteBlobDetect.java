@@ -1,8 +1,10 @@
 package com.neuronrobotics.imageprovider;
 
+import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfKeyPoint;
@@ -15,12 +17,12 @@ import org.opencv.features2d.KeyPoint;
 import org.opencv.imgproc.Imgproc;
 
 public class WhiteBlobDetect implements IObjectDetector {
-  MatOfKeyPoint matOfKeyPoints = new MatOfKeyPoint();
-  Mat prethresh = new Mat();
-  Mat postthresh = new Mat();
-  Scalar colorKey = new Scalar(0, 0, 255, 0);
-  private FeatureDetector RGBblobdetector
-      = FeatureDetector.create(FeatureDetector.PYRAMID_SIMPLEBLOB);
+  private MatOfKeyPoint matOfKeyPoints = new MatOfKeyPoint();
+  private Mat prethresh = new Mat();
+  private Mat postthresh = new Mat();
+  private Scalar colorKey = new Scalar(0, 0, 255, 0);
+  private FeatureDetector RGBblobdetector =
+      FeatureDetector.create(FeatureDetector.PYRAMID_SIMPLEBLOB);
   private int minSize;
   private int maxSize;
 
@@ -37,28 +39,34 @@ public class WhiteBlobDetect implements IObjectDetector {
     Mat displayImage = new Mat();
     ArrayList<Detection> ret = new ArrayList<>();
     KeyPoint[] detects = getObjects(inputImage, displayImage);
-    for (int i = 0; i < detects.length; i++) {
-      ret.add(new Detection(detects[i].pt.x, detects[i].pt.y, detects[i].size));
+    for (KeyPoint detect : detects) {
+      ret.add(new Detection(detect.pt.x, detect.pt.y, detect.size));
     }
     return ret;
   }
 
   private KeyPoint[] getObjects(Mat inputImage, Mat displayImage) {
-
     Imgproc.cvtColor(inputImage, prethresh, Imgproc.COLOR_RGB2GRAY);
-    Imgproc.threshold(prethresh, postthresh, colorKey.val[1], colorKey.val[0], Imgproc
-        .THRESH_BINARY);
+    Imgproc.threshold(prethresh,
+        postthresh,
+        colorKey.val[1],
+        colorKey.val[0],
+        Imgproc.THRESH_BINARY);
 
-    Mat invertcolormatrix
-        = new Mat(postthresh.rows(), postthresh.cols(), postthresh.type(), new Scalar(255, 255,
-        255));
+    Mat invertcolormatrix = new Mat(postthresh.rows(),
+        postthresh.cols(),
+        postthresh.type(),
+        new Scalar(255, 255, 255));
     Core.subtract(invertcolormatrix, postthresh, postthresh);
 
     RGBblobdetector.detect(postthresh, matOfKeyPoints);
 
 
     postthresh.copyTo(displayImage);
-    Features2d.drawKeypoints(postthresh, matOfKeyPoints, displayImage, new Scalar(0, 0, 255, 0), 0);
+    Features2d.drawKeypoints(postthresh,
+        matOfKeyPoints,
+        displayImage,
+        new Scalar(0, 0, 255, 0), 0);
 
     // Prepare to display data
     int useful = 0;
@@ -66,51 +74,54 @@ public class WhiteBlobDetect implements IObjectDetector {
 
     if (keyPoints.length > 0) {
 
-      for (int i = 0; i < keyPoints.length; i++) {
-        if (keyPoints[i].size > minSize && keyPoints[i].size < maxSize) {
+      for (KeyPoint keyPoint : keyPoints) {
+        if (keyPoint.size > minSize && keyPoint.size < maxSize) {
           useful++;
-
         }
       }
 
-      //System.out.println("Found "+useful);
-      KeyPoint[] myArray = new KeyPoint[useful];
-      Point center = null;//
+      KeyPoint[] usefulKeyPoints = new KeyPoint[useful];
+      Point center = null;
 
       useful = 0;
-      for (int i = 0; i < keyPoints.length; i++) {
-        if (keyPoints[i].size > minSize && keyPoints[i].size < maxSize) {
-          //System.out.println("Data from blob detect "+keyPoints[i]);
+      for (KeyPoint keyPoint : keyPoints) {
+        if (keyPoint.size > minSize && keyPoint.size < maxSize) {
+          center = keyPoint.pt;
 
-          center = keyPoints[i].pt;
+          Size objectSize = new Size(keyPoint.size, keyPoint.size);
+          Core.ellipse(displayImage,
+              center,
+              objectSize,
+              0,
+              0,
+              360,
+              new Scalar(255, 0, 255),
+              4,
+              8,
+              0);
 
-          Size objectSize = new Size(keyPoints[i].size,
-              keyPoints[i].size);
-
-          Core.ellipse(displayImage, center, objectSize, 0, 0, 360, new Scalar(255, 0,
-              255), 4, 8, 0);
-
-          myArray[useful++] = keyPoints[i];
+          usefulKeyPoints[useful++] = keyPoint;
         }
       }
-      if (center != null) {
-        for (int i = 0; i < myArray.length; i++) {
-          if (myArray[i] != null) {
 
-            Core.line(displayImage, new Point(150, 50), myArray[i].pt,
+      if (center != null) {
+        for (KeyPoint keyPoint : usefulKeyPoints) {
+          if (keyPoint != null) {
+            Core.line(displayImage, new Point(150, 50), keyPoint.pt,
                 new Scalar(100, 10, 10)/* CV_BGR(100,10,10) */, 3);
-            Core.circle(displayImage, myArray[i].pt, 10, new Scalar(100, 10, 10),
+            Core.circle(displayImage, keyPoint.pt, 10, new Scalar(100, 10, 10),
                 3);
           }
         }
       }
-      return myArray;
+
+      return usefulKeyPoints;
     }
 
-    System.out.println("Got: " + matOfKeyPoints.size());
+    LoggerUtilities.getLogger().log(Level.INFO,
+        "Got: " + matOfKeyPoints.size());
 
-    return new KeyPoint[0];
+    return new KeyPoint[0]; //TODO: ?
   }
-
 
 }

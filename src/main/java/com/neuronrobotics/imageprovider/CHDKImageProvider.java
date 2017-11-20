@@ -23,6 +23,15 @@ public class CHDKImageProvider extends AbstractImageProvider {
   }
 
   @Override
+  public BufferedImage captureNewImage() {
+    try {
+      return cam.getPicture();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   public boolean captureNewImage(BufferedImage imageData) {
     int failure = 0;
     while (failure < 5) {
@@ -40,7 +49,6 @@ public class CHDKImageProvider extends AbstractImageProvider {
     }
     return false;
   }
-
 
   @Override
   public void disconnectDeviceImp() {
@@ -60,15 +68,6 @@ public class CHDKImageProvider extends AbstractImageProvider {
   @Override
   public ArrayList<String> getNamespacesImp() {
     return null;
-  }
-
-  @Override
-  public BufferedImage captureNewImage() {
-    try {
-      return cam.getPicture();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }

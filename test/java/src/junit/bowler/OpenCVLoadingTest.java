@@ -1,17 +1,15 @@
 package junit.bowler;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
-import com.neuronrobotics.imageprovider.OpenCVJNILoader;
+import com.neuronrobotics.imageprovider.OpenCVLoader;
 
 public class OpenCVLoadingTest {
 
 	@Test
 	public void test() {
 		
-			OpenCVJNILoader.load();
+			OpenCVLoader.loadJNI();
 
 	}
 

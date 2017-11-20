@@ -10,4 +10,7 @@
     <suppress checks="SummaryJavadoc" files="^.*[\\/]test[\\/].*$"/>
     <suppress checks="." files="ImagesToVideo.java"/>
     <suppress checks="." files="Example.java"/>
+    <suppress checks="." files="OpenCVTest.java"/>
+    <suppress checks="." files="SalientDetector.java"/>
+    <suppress checks="." files="CHDKImageProvider.java"/>
 </suppressions>

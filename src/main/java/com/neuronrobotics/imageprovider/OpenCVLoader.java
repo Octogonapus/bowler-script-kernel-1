@@ -8,10 +8,13 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-public class OpenCVJNILoader {
+public class OpenCVLoader {
   private static NativeResource resource = null;
 
-  public static void load() {
+  /**
+   * Load the OpenCV JNI.
+   */
+  public static void loadJNI() {
     if (resource != null) {
       return;
     }
@@ -72,7 +75,7 @@ public class OpenCVJNILoader {
       //if(basedir.contains("x64")){
       System.load(basedir + "x64\\" + Core.NATIVE_LIBRARY_NAME + ".dll");
       //}else{
-      //	System.load(basedir+"x86\\"+Core.NATIVE_LIBRARY_NAME+".dll");
+      //System.loadJNI(basedir+"x86\\"+Core.NATIVE_LIBRARY_NAME+".dll");
       //}
     } else if (NativeResource.isOSX()) {
       String basedir = System.getenv("OPENCV_DIR");

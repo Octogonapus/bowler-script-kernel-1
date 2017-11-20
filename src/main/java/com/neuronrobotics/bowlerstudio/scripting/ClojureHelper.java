@@ -18,7 +18,7 @@ public class ClojureHelper implements IScriptingLanguage {
   public static Var REQUIRE = var("clojure.core", "require");
   public static Var META = var("clojure.core", "meta");
   public static Var EVAL = var("clojure.core", "eval");
-  public static Var READ_STRING = var("clojure.core", "load-string");
+  public static Var READ_STRING = var("clojure.core", "loadJNI-string");
 
   /**
    * Require a namespace by name, loading it if necessary.

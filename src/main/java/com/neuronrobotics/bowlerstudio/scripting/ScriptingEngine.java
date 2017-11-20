@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.logging.Level;
@@ -327,7 +328,13 @@ public class ScriptingEngine {
     return getGithub();
   }
 
-  public static String urlToGist(String in) {
+  /**
+   * Parse a gist hash from a URL.
+   *
+   * @param in Full gist URL
+   * @return Gist hash
+   */
+  public static Optional<String> urlToGist(String in) {
     if (in.endsWith(".git")) {
       in = in.substring(0, in.lastIndexOf('.'));
     }
@@ -339,21 +346,21 @@ public class ScriptingEngine {
       try {
         String id = tokens[2].split("#")[0];
         LoggerUtilities.getLogger().log(Level.INFO, "Gist URL detected: " + id);
-        return id;
+        return Optional.of(id);
       } catch (ArrayIndexOutOfBoundsException e) {
         try {
           String id = tokens[1].split("#")[0];
           LoggerUtilities.getLogger().log(Level.INFO, "Gist URL detected: " + id);
-          return id;
+          return Optional.of(id);
         } catch (ArrayIndexOutOfBoundsException ex) {
           LoggerUtilities.getLogger().log(Level.INFO,
               "Parsing " + in + " failed to find gist");
-          return "d4312a0787456ec27a2a";
+          return Optional.empty();
         }
       }
     }
 
-    return null;
+    return Optional.empty();
   }
 
   private static List<String> returnFirstGist(String html) {
@@ -376,9 +383,10 @@ public class ScriptingEngine {
   }
 
   public static List<String> getCurrentGist(String addr, WebEngine engine) {
-    String gist = urlToGist(addr);
+    List<String> out = new ArrayList<>();
 
-    if (gist == null) {
+    Optional<String> result = urlToGist(addr);
+    if (result == null) {
       try {
         LoggerUtilities.getLogger().log(Level.INFO, "Non-Gist URL detected.");
 
@@ -390,17 +398,17 @@ public class ScriptingEngine {
         transformer.transform(new DOMSource(engine.getDocument()), new StreamResult(sw));
         html = sw.getBuffer().toString();
 
-        return returnFirstGist(html);
+        out = returnFirstGist(html);
       } catch (TransformerException e) {
         LoggerUtilities.getLogger().log(Level.WARNING,
             "Could not make a new instance of TransformerFactory.\n"
                 + Throwables.getStackTraceAsString(e));
       }
+    } else {
+      result.ifPresent(out::add);
     }
 
-    ArrayList<String> ret = new ArrayList<>();
-    ret.add(gist);
-    return ret;
+    return out;
   }
 
   public static GitHub gitHubLogin() throws IOException {
@@ -1332,6 +1340,12 @@ public class ScriptingEngine {
     return false;
   }
 
+  /**
+   * Make a fork of a gist.
+   *
+   * @param currentGist Gist ID
+   * @return Gist fork
+   */
   public static GHGist fork(String currentGist) throws Exception {
     if (getGithub() != null) {
       waitForLogin();
@@ -1352,7 +1366,7 @@ public class ScriptingEngine {
     String id;
 
     if (incoming[0].endsWith(".git")) {
-      id = urlToGist(incoming[0]);
+      id = urlToGist(incoming[0]).get();
     } else {
       id = incoming[0];
       incoming[0] = "https://gist.github.com/" + id + ".git";

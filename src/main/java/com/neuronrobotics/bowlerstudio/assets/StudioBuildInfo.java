@@ -16,7 +16,7 @@ public class StudioBuildInfo {
     String out = getTag("app.version");
 
     if (out == null) {
-      throw new RuntimeException("Failed to load version number");
+      throw new RuntimeException("Failed to loadJNI version number");
     }
     return out;
   }

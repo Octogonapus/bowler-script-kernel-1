@@ -31,7 +31,7 @@ public class AssetFactory {
   /**
    * Load an FXML layout from a file without refreshing and return the loader.
    *
-   * @param file File to load from
+   * @param file File to loadJNI from
    * @return The FXMLLoader
    * @throws Exception Loading the file could throw
    */
@@ -41,8 +41,8 @@ public class AssetFactory {
 
   /**
    * Load an FXML layout from a file and return the loader.
-   * @param file File to load from
-   * @param refresh Whether the re-load a file even if it's already loaded
+   * @param file File to loadJNI from
+   * @param refresh Whether the re-loadJNI a file even if it's already loaded
    * @return The FXMLLoader
    * @throws Exception Loading the file could throw
    */
@@ -69,7 +69,7 @@ public class AssetFactory {
   /**
    * Load either an FXML file or an Image.
    *
-   * @param file File to load from
+   * @param file File to loadJNI from
    * @return The Image or null if loading an FXML file
    * @throws Exception Loading the file could throw
    */
@@ -121,7 +121,7 @@ public class AssetFactory {
   /**
    * Load an icon from a file.
    *
-   * @param file File to load from
+   * @param file File to loadJNI from
    * @return Icon
    */
   public static ImageView loadIcon(String file) {

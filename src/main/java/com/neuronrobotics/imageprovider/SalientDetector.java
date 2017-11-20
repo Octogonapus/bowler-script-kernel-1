@@ -26,17 +26,13 @@ import org.python.modules.math;
 
 public class SalientDetector implements IObjectDetector {
 
-  int countPositiveHits = 0;
-  int startReturning = 20;
-  int timeBetweenPosHits = 0;
+  private Boolean avoidDeath = false;
+  private Boolean findNorth = false;
+  private Boolean findHome = false;
 
-  Boolean avoidDeath = false;
-  Boolean findNorth = false;
-  Boolean findHome = false;
-
-  Boolean stage1 = true;
-  Boolean stage2 = false;
-  Boolean stage3 = false;
+  private Boolean stage1 = true;
+  private Boolean stage2 = false;
+  private Boolean stage3 = false;
 
   Boolean Object_Dropped = false;
 
@@ -555,7 +551,6 @@ public class SalientDetector implements IObjectDetector {
 
                         Detection INTERESTING = new Detection(m, n, area, confidence);
                         ReturnedArea.add(INTERESTING);
-                        countPositiveHits++;
                         System.out.println(
                             "STUFF FOUND" + m + "," + n + " AREA : " + area + " CONFIDENCE : "
                                 + confidence);

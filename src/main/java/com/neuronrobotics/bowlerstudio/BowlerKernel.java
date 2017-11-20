@@ -2,7 +2,7 @@ package com.neuronrobotics.bowlerstudio;
 
 import com.google.common.base.Throwables;
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
-import com.neuronrobotics.imageprovider.OpenCVJNILoader;
+import com.neuronrobotics.imageprovider.OpenCVLoader;
 import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.VoiceManager;
 import java.io.BufferedReader;
@@ -63,9 +63,9 @@ public class BowlerKernel {
   private static void fail() {
     System.err
         .println("Usage: \r\njava -jar BowlerScriptKernel.jar -s <file 1> .. <file n> # This will"
-            + " load one script after the next ");
+            + " loadJNI one script after the next ");
     System.err
-        .println("java -jar BowlerScriptKernel.jar -p <file 1> .. <file n> # This will load one "
+        .println("java -jar BowlerScriptKernel.jar -p <file 1> .. <file n> # This will loadJNI one "
             + "script then take the list of objects returned and pss them to the next script as "
             + "its 'args' variable ");
     System.err
@@ -86,7 +86,7 @@ public class BowlerKernel {
       fail();
     }
 
-    OpenCVJNILoader.load(); // Loads the OpenCV JNI (java native interface)
+    OpenCVLoader.loadJNI(); // Loads the OpenCV JNI (java native interface)
     //    File servo = ScriptingEngine.fileFromGit(
     //        "https://github.com/CommonWealthRobotics/BowlerStudioVitamins.git",
     //        "BowlerStudioVitamins/stl/servo/smallservo.stl");
