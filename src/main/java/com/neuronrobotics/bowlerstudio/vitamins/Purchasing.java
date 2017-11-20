@@ -37,6 +37,12 @@ public class Purchasing {
     return database.get(id);
   }
 
+  /**
+   * Save the database to git.
+   *
+   * @param type Database
+   * @throws Exception Pushing and getting the database can fail
+   */
   public static void saveDatabase(String type) throws Exception {
     // Save contents and publish them
     String jsonString = makeJson(type);

@@ -17,7 +17,7 @@ public interface ICadGenerator {
   ArrayList<CSG> generateCad(DHParameterKinematics dh, int linkIndex);
 
   /**
-   * This function should generate the body and any limbs of a given base. the user should attach
+   * This function should generate the body and any limbs of a given base. The user should attach
    * any listeners from the DH link for simulation.
    *
    * @param base the base to generate

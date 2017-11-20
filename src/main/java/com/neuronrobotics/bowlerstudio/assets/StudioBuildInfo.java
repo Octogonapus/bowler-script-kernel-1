@@ -33,6 +33,11 @@ public class StudioBuildInfo {
     return getBuildInfo()[2];
   }
 
+  /**
+   * Return the build version as an array of three ints (semver).
+   *
+   * @return Build version
+   */
   public static int[] getBuildInfo() {
     try {
       String out = getVersion();

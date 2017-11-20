@@ -57,6 +57,9 @@ public class BowlerKernel {
     }
   }
 
+  /**
+   * Print the correct program usage and exit.
+   */
   private static void fail() {
     System.err
         .println("Usage: \r\njava -jar BowlerScriptKernel.jar -s <file 1> .. <file n> # This will"
