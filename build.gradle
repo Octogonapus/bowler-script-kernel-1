@@ -129,8 +129,9 @@ dependencies {
     //make grapes work
     compile group: 'org.apache.ivy', name: 'ivy', version: '2.2.0'
 
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    compile group: 'commons-validator', name: 'commons-validator', version: '1.6'
     compile group: 'org.controlsfx', name: 'controlsfx', version: '8.0.6'
-    compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.7'
     compile 'org.kohsuke.stapler:stapler:1.237'
 

@@ -35,6 +35,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
@@ -331,15 +332,22 @@ public class ScriptingEngine {
   /**
    * Parse a gist hash from a URL.
    *
-   * @param in Full gist URL
+   * @param url Full gist URL
    * @return Gist hash
+   * @throws UnsupportedOperationException If the input url is not a valid url
    */
-  public static Optional<String> urlToGist(String in) {
-    if (in.endsWith(".git")) {
-      in = in.substring(0, in.lastIndexOf('.'));
+  public static Optional<String> urlToGist(String url) throws UnsupportedOperationException {
+    UrlValidator validator = new UrlValidator();
+    if (!validator.isValid(url)) {
+      throw new UnsupportedOperationException("Cannot parse gist ID from non-url: " + url);
     }
 
-    String domain = in.split("//")[1];
+    String substring = url;
+    if (url.endsWith(".git") || url.endsWith(".js")) {
+      substring = url.substring(0, url.lastIndexOf('.'));
+    }
+
+    String domain = substring.split("//")[1];
     String[] tokens = domain.split("/");
 
     if (tokens[0].toLowerCase().contains("gist.github.com") && tokens.length >= 2) {
@@ -354,7 +362,7 @@ public class ScriptingEngine {
           return Optional.of(id);
         } catch (ArrayIndexOutOfBoundsException ex) {
           LoggerUtilities.getLogger().log(Level.INFO,
-              "Parsing " + in + " failed to find gist");
+              "Parsing " + url + " failed to find gist");
           return Optional.empty();
         }
       }
