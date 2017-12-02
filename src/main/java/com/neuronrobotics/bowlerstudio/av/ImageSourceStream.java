@@ -1,11 +1,13 @@
 package com.neuronrobotics.bowlerstudio.av;
 
 import com.neuronrobotics.bowlerstudio.LoggerUtilities;
+
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Vector;
 import java.util.logging.Level;
+
 import javax.media.Buffer;
 import javax.media.Format;
 import javax.media.format.VideoFormat;

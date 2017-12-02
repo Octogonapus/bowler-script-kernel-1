@@ -3,19 +3,22 @@ package com.neuronrobotics.bowlerstudio.scripting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 public class JsonRunner implements IScriptingLanguage {
   //Create the type, this tells GSON what datatypes to instantiate when parsing and saving the json
   private static Type TT_mapStringString =
-      new TypeToken<HashMap<String, HashMap<String, Object>>>(){}.getType();
+      new TypeToken<HashMap<String, HashMap<String, Object>>>() {
+      }.getType();
 
   //chreat the gson object, this is the parsing factory
   private static Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();

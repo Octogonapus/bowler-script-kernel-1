@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
+
 import java.util.Optional;
+
 import org.junit.Test;
 
 public class ScriptingEngineTest {

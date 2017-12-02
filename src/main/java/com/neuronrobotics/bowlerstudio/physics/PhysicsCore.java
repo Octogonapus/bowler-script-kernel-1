@@ -12,14 +12,20 @@ import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.Transform;
+
 import com.google.common.base.Throwables;
+
 import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.sdk.util.ThreadUtil;
+
 import eu.mihosoft.vrl.v3d.CSG;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+
 import javafx.application.Platform;
+
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -185,6 +191,7 @@ public class PhysicsCore {
 
   /**
    * Get all CSG objects
+   *
    * @return List of CSG objects
    */
   public List<CSG> getCsgFromEngine() {

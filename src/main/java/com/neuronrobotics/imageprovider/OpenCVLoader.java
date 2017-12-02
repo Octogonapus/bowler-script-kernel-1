@@ -1,9 +1,12 @@
 package com.neuronrobotics.imageprovider;
 
 import com.google.common.base.Throwables;
+
 import com.neuronrobotics.bowlerstudio.LoggerUtilities;
+
 import java.io.File;
 import java.util.logging.Level;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;

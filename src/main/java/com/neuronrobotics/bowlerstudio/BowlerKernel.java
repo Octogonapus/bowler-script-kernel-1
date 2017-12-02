@@ -1,10 +1,12 @@
 package com.neuronrobotics.bowlerstudio;
 
 import com.google.common.base.Throwables;
+
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
 import com.neuronrobotics.imageprovider.OpenCVLoader;
 import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.VoiceManager;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,6 +20,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+
 import jline.ConsoleReader;
 import jline.Terminal;
 
@@ -296,11 +299,11 @@ public class BowlerKernel {
   /**
    * Speak a string.
    *
-   * @param msg Message to say
-   * @param rate Speech rate
-   * @param pitch Speech pitch
-   * @param range Speech range
-   * @param shift Speech shift
+   * @param msg    Message to say
+   * @param rate   Speech rate
+   * @param pitch  Speech pitch
+   * @param range  Speech range
+   * @param shift  Speech shift
    * @param volume Speech volume
    * @return 0
    */

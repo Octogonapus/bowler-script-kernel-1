@@ -3,13 +3,16 @@ package com.neuronrobotics.bowlerstudio.assets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
 import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
+
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+
 import org.kohsuke.github.GHMyself;
 import org.kohsuke.github.GHRepository;
 
@@ -19,7 +22,8 @@ public class ConfigurationDatabase {
   private static final String HTTPS_GITHUB_COM_NEURON_ROBOTICS_BOWLER_STUDIO_CONFIGURATION_GIT =
       "https://github.com/CommonWealthRobotics/" + repo + ".git";
   private static final Type TT_mapStringString
-      = new TypeToken<HashMap<String, HashMap<String, Object>>>() {}.getType();
+      = new TypeToken<HashMap<String, HashMap<String, Object>>>() {
+  }.getType();
   private static String gitSource = null; // madhephaestus
   private static String dbFile = "database.json";
   private static boolean checked;
@@ -46,7 +50,7 @@ public class ConfigurationDatabase {
    *
    * @param paramsKey Key for the map
    * @param objectKey Key for the object
-   * @param value New object
+   * @param value     New object
    * @return The previous value for the object key
    */
   public static Object setObject(String paramsKey, String objectKey, Object value) {

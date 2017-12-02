@@ -4,6 +4,7 @@ package com.neuronrobotics.bowlerstudio.scripting;
 import clojure.lang.RT;
 import clojure.lang.Symbol;
 import clojure.lang.Var;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,9 +24,6 @@ public class ClojureHelper implements IScriptingLanguage {
   /**
    * Require a namespace by name, loading it if necessary.
    * Calls clojure.core/require
-   *
-   * @param nsName
-   * @return
    */
   public static Object require(String nsName) {
     return REQUIRE.invoke(Symbol.intern(nsName));
@@ -38,9 +36,6 @@ public class ClojureHelper implements IScriptingLanguage {
   /**
    * Looks up a var by name in the clojure.core namespace.
    * The var can subsequently be invoked if it is a function.
-   *
-   * @param varName
-   * @return
    */
   public static Var var(String varName) {
     return var("clojure.core", varName);
@@ -49,10 +44,6 @@ public class ClojureHelper implements IScriptingLanguage {
   /**
    * Looks up a var by name in the given namespace.
    * The var can subsequently be invoked if it is a function.
-   *
-   * @param nsName
-   * @param varName
-   * @return
    */
   public static Var var(String nsName, String varName) {
     return RT.var(nsName, varName);

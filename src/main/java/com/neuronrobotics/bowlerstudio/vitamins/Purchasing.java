@@ -3,7 +3,9 @@ package com.neuronrobotics.bowlerstudio.vitamins;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -27,7 +30,8 @@ public class Purchasing {
   private static String gitRpoDatabase = defaultgitRpoDatabase;
   //Create the type, this tells GSON what datatypes to instantiate when parsing and saving the json
   private static Type TT_mapStringString
-      = new TypeToken<HashMap<String, HashMap<String, PurchasingData>>>() {}.getType();
+      = new TypeToken<HashMap<String, HashMap<String, PurchasingData>>>() {
+  }.getType();
   //chreat the gson object, this is the parsing factory
   private static Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
@@ -112,9 +116,9 @@ public class Purchasing {
       File file;
       try {
         file = ScriptingEngine.fileFromGit(
-                getGitRpoDatabase(),// git repo, change this if you fork this demo
-                getRootFolder() + type + ".json"// File from within the Git repo
-            );
+            getGitRpoDatabase(),// git repo, change this if you fork this demo
+            getRootFolder() + type + ".json"// File from within the Git repo
+        );
         inPut = FileUtils.openInputStream(file);
 
         jsonString = IOUtils.toString(inPut);
@@ -145,9 +149,9 @@ public class Purchasing {
 
     try {
       folder = ScriptingEngine.fileFromGit(
-              getGitRpoDatabase(),// git repo, change this if you fork this demo
-              getRootFolder() + "capScrew.json"
-          );
+          getGitRpoDatabase(),// git repo, change this if you fork this demo
+          getRootFolder() + "capScrew.json"
+      );
       File[] listOfFiles = folder.getParentFile().listFiles();
 
       for (File f : listOfFiles) {

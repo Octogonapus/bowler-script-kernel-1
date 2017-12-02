@@ -27,22 +27,17 @@ public interface IScriptingLanguage {
    * @param code the text content of the code to be executed
    * @param args the incoming arguments as a list of objects
    * @return the objects returned form the code that ran
-   * @throws Exception
    */
   Object inlineScriptRun(String code, ArrayList<Object> args) throws Exception;
 
   /**
    * Returns the HashMap key for this language
-   *
-   * @return
    */
   String getShellType();
 
   /**
    * Returns the list of supported file extentions Convention is to provide just the leters that
    * make up the file extention
-   *
-   * @return
    */
   ArrayList<String> getFileExtenetion();
 

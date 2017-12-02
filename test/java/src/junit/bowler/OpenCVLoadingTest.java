@@ -6,11 +6,11 @@ import com.neuronrobotics.imageprovider.OpenCVLoader;
 
 public class OpenCVLoadingTest {
 
-	@Test
-	public void test() {
-		
-			OpenCVLoader.loadJNI();
+  @Test
+  public void test() {
 
-	}
+    OpenCVLoader.loadJNI();
+
+  }
 
 }

@@ -1,9 +1,11 @@
 package com.neuronrobotics.imageprovider;
 
 import com.neuronrobotics.bowlerstudio.LoggerUtilities;
+
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.logging.Level;
+
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
 import org.opencv.highgui.VideoCapture;

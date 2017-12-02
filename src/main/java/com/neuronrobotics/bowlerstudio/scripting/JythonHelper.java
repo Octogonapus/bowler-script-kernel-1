@@ -3,12 +3,16 @@ package com.neuronrobotics.bowlerstudio.scripting;
 import com.neuronrobotics.sdk.common.BowlerAbstractDevice;
 import com.neuronrobotics.sdk.common.DeviceManager;
 import com.neuronrobotics.sdk.common.Log;
+
 import eu.mihosoft.vrl.v3d.CSG;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
+
 import javafx.scene.control.Tab;
+
 import org.python.util.PythonInterpreter;
 
 public class JythonHelper implements IScriptingLanguage {

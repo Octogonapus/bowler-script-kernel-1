@@ -19,7 +19,7 @@ public final class ScriptingHelper {
   /**
    * Read all bytes from a file with some charset.
    *
-   * @param file File to read from
+   * @param file    File to read from
    * @param charset Charset to use for the output String
    * @return String with provided charset
    */

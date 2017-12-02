@@ -1,6 +1,7 @@
 package com.neuronrobotics.bowlerstudio.physics;
 
 import Jama.Matrix;
+
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.constraintsolver.HingeConstraint;
 import com.bulletphysics.linearmath.Transform;
@@ -16,12 +17,16 @@ import com.neuronrobotics.sdk.addons.kinematics.math.RotationNR;
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR;
 import com.neuronrobotics.sdk.pid.PIDLimitEvent;
 import com.neuronrobotics.sdk.util.ThreadUtil;
+
 import eu.mihosoft.vrl.v3d.CSG;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
+
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 

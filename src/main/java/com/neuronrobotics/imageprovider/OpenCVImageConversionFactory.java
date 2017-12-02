@@ -3,6 +3,7 @@ package com.neuronrobotics.imageprovider;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+
 import javafx.scene.image.Image;
 
 public class OpenCVImageConversionFactory {

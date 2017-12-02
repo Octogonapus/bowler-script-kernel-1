@@ -1,9 +1,12 @@
 package com.neuronrobotics.bowlerstudio.scripting;
 
 import com.google.common.base.Throwables;
+
 import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.sdk.util.ThreadUtil;
+
 import eu.mihosoft.vrl.v3d.parametrics.CSGDatabase;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,12 +30,15 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.logging.Level;
+
 import javafx.scene.web.WebEngine;
+
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -134,7 +140,7 @@ public class ScriptingEngine {
       } catch (IOException e) {
         return null;
       }
-      if ("" .equals(creds[0]) && "" .equals(username)) {
+      if ("".equals(creds[0]) && "".equals(username)) {
         LoggerUtilities.getLogger().log(Level.INFO,
             "No username, using anonymous login.");
         return null;
@@ -147,7 +153,7 @@ public class ScriptingEngine {
         "Github password: ");
     try {
       creds[1] = buf.readLine();
-      if ("" .equals(creds[1])) {
+      if ("".equals(creds[1])) {
         LoggerUtilities.getLogger().log(Level.INFO,
             "No username, using anonymous login.");
       }
@@ -430,7 +436,7 @@ public class ScriptingEngine {
             "###ERROR Enter the Username not the Email Address###");
         return gitHubLogin();
       }
-      if ("" .equals(creds[0]) || "" .equals(creds[1])) {
+      if ("".equals(creds[0]) || "".equals(creds[1])) {
         LoggerUtilities.getLogger().log(Level.WARNING,
             "###No Username or password###");
         return setupAnyonmous();
@@ -1126,7 +1132,7 @@ public class ScriptingEngine {
    * exist, it clones it.
    *
    * @param remoteURI Remove repository URI
-   * @param branch Branch in repository
+   * @param branch    Branch in repository
    * @return The local directory containing the .git
    */
   public static File cloneRepo(String remoteURI, String branch) {

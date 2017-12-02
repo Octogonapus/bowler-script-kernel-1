@@ -3,7 +3,9 @@ package com.neuronrobotics.bowlerstudio.physics;
 import com.bulletphysics.linearmath.Transform;
 import com.neuronrobotics.sdk.addons.kinematics.math.RotationNR;
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR;
+
 import javafx.scene.transform.Affine;
+
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Quat4d;
 import javax.vecmath.Quat4f;
@@ -17,7 +19,7 @@ public class TransformFactory extends com.neuronrobotics.sdk.addons.kinematics.T
   /**
    * TransformNR to BulletPhysics linearmath transform.
    *
-   * @param nr Source
+   * @param nr     Source
    * @param bullet Target
    */
   public static void nrToBullet(TransformNR nr, com.bulletphysics.linearmath.Transform bullet) {

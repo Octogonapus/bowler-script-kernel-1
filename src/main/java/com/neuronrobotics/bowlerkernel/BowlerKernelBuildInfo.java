@@ -1,7 +1,9 @@
 package com.neuronrobotics.bowlerkernel;
 
 import com.google.common.base.Throwables;
+
 import com.neuronrobotics.bowlerstudio.LoggerUtilities;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

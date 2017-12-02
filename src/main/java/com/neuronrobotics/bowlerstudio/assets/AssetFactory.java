@@ -1,8 +1,10 @@
 package com.neuronrobotics.bowlerstudio.assets;
 
 import com.google.common.base.Throwables;
+
 import com.neuronrobotics.bowlerstudio.LoggerUtilities;
 import com.neuronrobotics.bowlerstudio.scripting.ScriptingEngine;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -10,11 +12,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+
 import javax.imageio.ImageIO;
 
 public class AssetFactory {
@@ -41,7 +45,8 @@ public class AssetFactory {
 
   /**
    * Load an FXML layout from a file and return the loader.
-   * @param file File to loadJNI from
+   *
+   * @param file    File to loadJNI from
    * @param refresh Whether the re-loadJNI a file even if it's already loaded
    * @return The FXMLLoader
    * @throws Exception Loading the file could throw
@@ -60,10 +65,10 @@ public class AssetFactory {
 
   public static File loadFile(String file) throws Exception {
     return ScriptingEngine.fileFromGit(
-            getGitSource(),// git repo, change this if you fork this demo
-            getAssetRepoBranch(),
-            file// File from within the Git repo
-        );
+        getGitSource(),// git repo, change this if you fork this demo
+        getAssetRepoBranch(),
+        file// File from within the Git repo
+    );
   }
 
   /**

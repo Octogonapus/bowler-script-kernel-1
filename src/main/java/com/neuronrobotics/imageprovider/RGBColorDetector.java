@@ -3,6 +3,7 @@ package com.neuronrobotics.imageprovider;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -47,7 +48,8 @@ public class RGBColorDetector implements IObjectDetector {
 
   /**
    * Detect objects in an image
-   * @param in Input image buffer
+   *
+   * @param in   Input image buffer
    * @param disp Output image buffer
    * @return List of detected objects
    */

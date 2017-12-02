@@ -7,8 +7,11 @@ import chdk.ptp.java.exception.CameraConnectionException;
 import chdk.ptp.java.exception.GenericCameraException;
 import chdk.ptp.java.exception.PTPTimeoutException;
 import chdk.ptp.java.model.CameraMode;
+
 import com.google.common.base.Throwables;
+
 import com.neuronrobotics.bowlerstudio.LoggerUtilities;
+
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.logging.Level;

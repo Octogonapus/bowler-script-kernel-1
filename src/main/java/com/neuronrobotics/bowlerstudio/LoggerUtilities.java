@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
 import org.apache.commons.io.FileUtils;
 
 public final class LoggerUtilities {
